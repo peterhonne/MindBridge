@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindBridge AI - Therapeutic Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            display: none; /* Hide by default until authentication is verified */
+            grid-template-columns: 300px 1fr;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .agent-status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-role {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .role-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .agent-description {
+            font-size: 14px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .session-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .session-info h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .crisis-monitor {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .crisis-monitor.alert {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            animation: alertPulse 1s infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .crisis-status {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #22c55e;
+        }
+
+        .connection-status.disconnected {
+            color: #ef4444;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 0;
+            max-height: calc(100vh - 300px);
+        }
+
+        .message {
+            display: flex;
+            gap: 15px;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .message.agent .message-avatar {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.agent .message-content {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .agent-role-tag {
+            display: inline-block;
+            background: #4ade80;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 30px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .input-container {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 20px 30px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            min-height: 90px;
+            max-height: 180px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 0;
+        }
+
+        .message-input {
+            width: 100%;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+            max-height: 120px;
+            min-height: 50px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message-input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .send-button {
+            background: linear-gradient(45deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+            flex-shrink: 0;
+            align-self: flex-end;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .crisis-alert {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 20px;
+            margin: 10px 30px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .crisis-alert.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .crisis-icon {
+            font-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .sidebar {
+                display: none;
+            }
+            
+            .messages {
+                padding: 15px;
+                max-height: calc(100vh - 200px);
+            }
+            
+            .input-container {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .app-container {
+                grid-template-columns: 250px 1fr;
+            }
+            
+            .sidebar {
+                padding: 20px 15px;
+            }
+            
+            .messages {
+                padding: 20px;
+            }
+        }
+
+        /* Loading screen styles */
+        .auth-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading screen shown by default -->
+    <div class="auth-loading" id="authLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">MindBridge AI</div>
+        <div class="loading-subtext">Initializing secure connection...</div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">🧠 MindBridge AI</div>
+
+            <div class="agent-status">
+                <div class="agent-role">
+                    <span class="role-indicator"></span>
+                    <span id="currentRole">CBT Therapist</span>
+                </div>
+                <div class="agent-description" id="roleDescription">
+                    Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.
+                </div>
+            </div>
+
+            <div class="session-info">
+                <h3>Session Info</h3>
+                <div class="info-item">
+                    <span>Duration:</span>
+                    <span id="sessionTime">00:00</span>
+                </div>
+                <div class="info-item">
+                    <span>Messages:</span>
+                    <span id="messageCount">0</span>
+                </div>
+                <div class="info-item">
+                    <span>Mood Trend:</span>
+                    <span id="moodTrend">📈 Improving</span>
+                </div>
+            </div>
+
+            <div class="crisis-monitor" id="crisisMonitor">
+                <div class="crisis-status">✅ Safe Zone</div>
+                <div style="font-size: 12px; opacity: 0.8;">
+                    Continuous monitoring active
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="user-info">
+                    <div class="avatar">JD</div>
+                    <div>
+                        <div style="font-weight: 600;">John Doe</div>
+                        <div style="font-size: 14px; color: #6b7280;">Patient ID: #12345</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div class="connection-status" id="connectionStatus">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="connectionText">Connecting...</span>
+                    </div>
+                    <button onclick="keycloakLogout()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="crisis-alert" id="crisisAlert">
+                <span class="crisis-icon">🚨</span>
+                <div>
+                    <strong>Crisis Mode Activated</strong> - Switching to Crisis Counselor mode for immediate support.
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="message agent">
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content">
+                            <div class="agent-role-tag">CBT Therapist</div>
+                            Hello! I'm your adaptive AI therapeutic companion. I can switch between different therapeutic approaches based on what you need most right now. How are you feeling today?
+                            <div class="timestamp">Just now</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="message-avatar" style="background: linear-gradient(45deg, #4ade80, #22c55e);">AI</div>
+                    <div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">AI is thinking...</div>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea
+                            class="message-input"
+                            id="messageInput"
+                            placeholder="Share what's on your mind... Your message is private and secure."
+                            rows="1"
+                        ></textarea>
+                    </div>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOMP.js for WebSocket communication -->
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <!-- Keycloak JS -->
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.0/dist/keycloak.min.js"></script>
+
+    <!-- Authentication Guard -->
+    <script>
+        // Keycloak configuration from your React app
+        const KEYCLOAK_CONFIG = {
+            url: 'http://localhost:8080',
+            realm: 'MindBridge',
+            clientId: 'MindBridgeClient'
+        };
+        
+        // Development mode settings
+        const DEVELOPMENT_MODE = true; // Set to false when Keycloak is properly configured
+        const SKIP_KEYCLOAK = false; // Set to true to skip Keycloak entirely and use development mode
+        const MOCK_USER = {
+            id: 'dev-user-001',
+            email: 'healthcare@mindbridge.dev',
+            name: 'Healthcare Provider',
+            given_name: 'Healthcare',
+            family_name: 'Provider',
+            preferred_username: 'healthcare'
+        };
+        
+        let keycloakInstance = null;
+        let authMode = 'checking'; // 'checking', 'keycloak', 'development'
+        let initializationInProgress = false;
+        let initializationCompleted = false;
+        let keycloakInitAttempted = false;
+        
+        // Function to reset initialization state (useful for debugging)
+        function resetInitializationState() {
+            console.log('Resetting initialization state...');
+            initializationInProgress = false;
+            initializationCompleted = false;
+            domContentLoadedHandled = false;
+            keycloakInitAttempted = false;
+            window.mainAppInitialized = false;
+            if (window.sessionInfoInterval) {
+                clearInterval(window.sessionInfoInterval);
+                window.sessionInfoInterval = null;
+            }
+        }
+        
+        // Expose reset function globally for debugging
+        window.resetInitializationState = resetInitializationState;
+        
+        // Handle OAuth callback from Keycloak
+        async function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const sessionState = urlParams.get('session_state');
+            
+            if (code) {
+                console.log('OAuth callback detected, exchanging code for token...');
+                
+                try {
+                    // Exchange authorization code for tokens
+                    const redirectUri = getRedirectUri();
+                    const formData = new URLSearchParams();
+                    formData.append('grant_type', 'authorization_code');
+                    formData.append('client_id', KEYCLOAK_CONFIG.clientId);
+                    formData.append('code', code);
+                    formData.append('redirect_uri', redirectUri);
+                    
+                    const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData.toString(),
+                    });
+                    
+                    if (response.ok) {
+                        const tokenResponse = await response.json();
+                        
+                        // Store tokens
+                        localStorage.setItem('token', tokenResponse.access_token);
+                        localStorage.setItem('refreshToken', tokenResponse.refresh_token);
+                        
+                        // Clean URL and show main app
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        showMainApp();
+                        return true;
+                    } else {
+                        const error = await response.json();
+                        console.error('Token exchange failed:', error);
+                        throw new Error(error.error_description || 'Token exchange failed');
+                    }
+                } catch (error) {
+                    console.error('OAuth callback error:', error);
+                    // Clear URL parameters and show login
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showLoginFallback();
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Track if initialization has started
+        let domContentLoadedHandled = false;
+        
+        // Immediately hide the page and check authentication
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (domContentLoadedHandled || initializationInProgress || initializationCompleted) {
+                console.log('DOMContentLoaded already handled or initialization in progress, skipping...');
+                return;
+            }
+            domContentLoadedHandled = true;
+            
+            console.log('DOMContentLoaded triggered, starting authentication check...');
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) {
+                appContainer.style.display = 'none';
+            }
+            
+            // Check URL parameters for OAuth callback
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasCode = urlParams.has('code');
+            const hasLogoutParam = urlParams.has('logout') || window.location.href.includes('logout');
+            
+            if (hasCode) {
+                // Handle OAuth callback
+                const callbackHandled = await handleOAuthCallback();
+                if (callbackHandled) {
+                    return; // OAuth callback handled successfully
+                }
+            }
+            
+            if (hasLogoutParam) {
+                // Clear any existing tokens after logout redirect
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('Logout completed, showing login form');
+                
+                // Clear the logout flag from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Mark initialization as completed to prevent any auth attempts
+                initializationCompleted = true;
+                domContentLoadedHandled = true;
+                
+                // Reset logout progress flag
+                window.logoutInProgress = false;
+                
+                // Show login form
+                showLoginFallback();
+                return;
+            }
+            
+            // Skip Keycloak entirely if configured
+            if (SKIP_KEYCLOAK) {
+                console.log('🚀 SKIP_KEYCLOAK enabled, using development mode');
+                authMode = 'development';
+                // Check for existing token even in development mode
+                const existingToken = localStorage.getItem('token');
+                if (existingToken && validateExistingToken(existingToken)) {
+                    return; // Token is valid, main app will be shown
+                }
+                initializationCompleted = true;
+                showLoginFallback();
+                return;
+            }
+            
+            // Check if we already have tokens
+            const existingToken = localStorage.getItem('token');
+            const existingRefreshToken = localStorage.getItem('refreshToken');
+            
+            if (existingToken || existingRefreshToken) {
+                console.log('Found existing tokens, validating...');
+                // Try to validate token first, or refresh if only refresh token exists
+                const isValid = await validateExistingToken(existingToken, existingRefreshToken);
+                if (isValid) {
+                    return; // Token is valid or was refreshed, main app will be shown
+                }
+                // If both access and refresh tokens are invalid, continue to Keycloak initialization
+            }
+            
+            console.log('No valid token, initializing Keycloak');
+            // Initialize Keycloak with a small delay to prevent race conditions
+            setTimeout(() => {
+                if (!initializationInProgress && !initializationCompleted) {
+                    initKeycloakAuth();
+                }
+            }, 100);
+        });
+        
+        async function validateExistingToken(token, refreshToken) {
+            try {
+                // If no access token but have refresh token, try to refresh immediately
+                if (!token && refreshToken) {
+                    console.log('No access token found, but refresh token exists. Attempting refresh...');
+                    try {
+                        const newToken = await refreshWithStoredToken(refreshToken);
+                        if (newToken) {
+                            console.log('✅ Token refreshed successfully on page load');
+                            initializationCompleted = true;
+                            showMainApp();
+                            return true;
+                        }
+                    } catch (refreshError) {
+                        console.log('❌ Refresh failed during page load:', refreshError);
+                        // Clear invalid refresh token
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        initializationCompleted = true;
+                        showLoginFallback();
+                        return false;
+                    }
+                }
+                
+                // If we have an access token, validate it
+                if (token) {
+                    // Decode JWT to check if it's expired
+                    const payload = decodeJWT(token);
+                    const now = Math.floor(Date.now() / 1000);
+                    
+                    console.log('Token validation - Current time:', now, 'Token exp:', payload.exp);
+                    
+                    if (payload.exp && payload.exp > now) {
+                        console.log('✅ Token is valid, showing main app');
+                        initializationCompleted = true;
+                        showMainApp();
+                        return true;
+                    } else {
+                        console.log('❌ Access token expired, attempting refresh...');
+                        
+                        // Try to refresh using refresh token
+                        if (refreshToken) {
+                            try {
+                                const newToken = await refreshWithStoredToken(refreshToken);
+                                if (newToken) {
+                                    console.log('✅ Token refreshed successfully on page load');
+                                    initializationCompleted = true;
+                                    showMainApp();
+                                    return true;
+                                }
+                            } catch (refreshError) {
+                                console.log('❌ Refresh failed during page load:', refreshError);
+                            }
+                        }
+                        
+                        // If refresh fails or no refresh token, clear everything
+                        console.log('❌ No valid refresh token, clearing and showing login');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        initializationCompleted = true;
+                        showLoginFallback();
+                        return false;
+                    }
+                }
+                
+                // If no tokens at all, return false
+                console.log('❌ No tokens found');
+                return false;
+                
+            } catch (error) {
+                console.log('❌ Invalid token, clearing and showing login:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+                initializationCompleted = true;
+                showLoginFallback();
+                return false;
+            }
+        }
+
+        // Helper function to refresh token using stored refresh token
+        async function refreshWithStoredToken(refreshToken) {
+            try {
+                console.log('Attempting token refresh with stored refresh token...');
+                
+                const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'grant_type': 'refresh_token',
+                        'client_id': KEYCLOAK_CONFIG.clientId,
+                        'refresh_token': refreshToken
+                    })
+                });
+                
+                if (response.ok) {
+                    const tokenData = await response.json();
+                    localStorage.setItem('token', tokenData.access_token);
+                    localStorage.setItem('refreshToken', tokenData.refresh_token);
+                    console.log('✅ Token refreshed successfully');
+                    return tokenData.access_token;
+                } else {
+                    const errorData = await response.json();
+                    console.error('❌ Refresh token response error:', errorData);
+                    throw new Error('Refresh token request failed: ' + (errorData.error_description || errorData.error));
+                }
+            } catch (error) {
+                console.error('❌ Refresh token exchange failed:', error);
+                throw error;
+            }
+        }
+        
+        async function initKeycloakAuth() {
+            // Prevent multiple concurrent initializations
+            if (initializationInProgress || initializationCompleted || keycloakInitAttempted) {
+                console.log('Keycloak initialization already in progress, completed, or attempted. Skipping...');
+                return;
+            }
+            
+            initializationInProgress = true;
+            keycloakInitAttempted = true;
+            console.log('Initializing Keycloak authentication...');
+            
+            // Check if Keycloak library is loaded
+            if (typeof Keycloak === 'undefined') {
+                console.error('Keycloak library not loaded');
+                initializationInProgress = false;
+                if (DEVELOPMENT_MODE) {
+                    console.log('Falling back to development mode');
+                    authMode = 'development';
+                    initializationCompleted = true;
+                    showLoginFallback();
+                } else {
+                    showKeycloakError();
+                }
+                return;
+            }
+            
+            // First check if Keycloak server is available
+            console.log('About to check Keycloak availability...');
+            const isKeycloakAvailable = await checkKeycloakAvailability();
+            console.log('Keycloak availability check result:', isKeycloakAvailable);
+            
+            if (!isKeycloakAvailable) {
+                console.error('❌ Keycloak server not available at:', KEYCLOAK_CONFIG.url);
+                console.error('Please check:');
+                console.error('1. Keycloak server is running');
+                console.error('2. Server is accessible at http://localhost:8080');
+                console.error('3. No firewall or proxy blocking the connection');
+                
+                initializationInProgress = false;
+                if (DEVELOPMENT_MODE) {
+                    console.log('✅ Using development mode as fallback');
+                    authMode = 'development';
+                    initializationCompleted = true;
+                    showLoginFallback();
+                } else {
+                    showKeycloakError();
+                }
+                return;
+            }
+            
+            console.log('✅ Keycloak server is available, proceeding with initialization...');
+            
+            // Reset keycloak instance
+            keycloakInstance = null;
+            authMode = 'keycloak';
+            
+            try {
+                console.log('Creating Keycloak instance with config:', KEYCLOAK_CONFIG);
+                
+                // Validate configuration before creating instance
+                if (!KEYCLOAK_CONFIG.url) {
+                    throw new Error('Keycloak URL is missing in configuration');
+                }
+                if (!KEYCLOAK_CONFIG.realm) {
+                    throw new Error('Keycloak realm is missing in configuration');
+                }
+                if (!KEYCLOAK_CONFIG.clientId) {
+                    throw new Error('Keycloak clientId is missing in configuration');
+                }
+                
+                console.log('Configuration validation passed, creating instance...');
+                keycloakInstance = new Keycloak(KEYCLOAK_CONFIG);
+                console.log('Keycloak instance created successfully:', keycloakInstance);
+                
+                // Clear any existing Keycloak state that might cause nonce issues
+                console.log('Clearing any existing Keycloak state...');
+                keycloakInstance.clearToken();
+                
+                // Clear any Keycloak-related localStorage/sessionStorage
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('keycloak') || key.includes('kc-') || key.includes('auth')) {
+                        console.log('Removing potentially conflicting storage key:', key);
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                Object.keys(sessionStorage).forEach(key => {
+                    if (key.includes('keycloak') || key.includes('kc-') || key.includes('auth')) {
+                        console.log('Removing potentially conflicting session key:', key);
+                        sessionStorage.removeItem(key);
+                    }
+                });
+                
+                console.log('Starting Keycloak initialization...');
+                
+                // Set a timeout for Keycloak initialization
+                const initTimeout = setTimeout(() => {
+                    console.error('Keycloak initialization timed out after 10 seconds');
+                    initializationInProgress = false;
+                    if (DEVELOPMENT_MODE) {
+                        console.log('Falling back to development mode due to timeout');
+                        authMode = 'development';
+                        initializationCompleted = true;
+                        showLoginFallback();
+                    } else {
+                        showKeycloakError();
+                    }
+                }, 10000);
+                
+                keycloakInstance.init({
+                    onLoad: undefined, // Don't auto-login or check SSO
+                    checkLoginIframe: false,
+                    silentCheckSsoRedirectUri: undefined, // Disable silent check
+                    enableLogging: true,
+                    // Remove PKCE to avoid nonce issues
+                    // pkceMethod: 'S256',
+                    flow: 'standard', // Use standard flow
+                    responseMode: 'query', // Use query mode to avoid fragment issues
+                    scope: 'openid profile email'
+                }).then(function(authenticated) {
+                    clearTimeout(initTimeout);
+                    console.log('✅ Keycloak init completed successfully!');
+                    console.log('Authenticated:', authenticated);
+                    console.log('Keycloak authenticated property:', keycloakInstance.authenticated);
+                    console.log('Token present:', keycloakInstance.token ? 'YES' : 'NO');
+                    console.log('Refresh token present:', keycloakInstance.refreshToken ? 'YES' : 'NO');
+                    
+                    if (authenticated && keycloakInstance.token) {
+                        console.log('✅ User is authenticated with valid token');
+                        
+                        // Store tokens
+                        localStorage.setItem('token', keycloakInstance.token);
+                        if (keycloakInstance.refreshToken) {
+                            localStorage.setItem('refreshToken', keycloakInstance.refreshToken);
+                        }
+                        
+                        console.log('Showing main application...');
+                        initializationInProgress = false;
+                        initializationCompleted = true;
+                        showMainApp();
+                    } else {
+                        console.log('ℹ️ User not authenticated, showing login form');
+                        initializationInProgress = false;
+                        initializationCompleted = true;
+                        showLoginFallback();
+                    }
+                }).catch(function(error) {
+                    clearTimeout(initTimeout);
+                    console.error('Keycloak init promise rejected:', error);
+                    console.error('Raw error object:', error);
+                    console.error('Error type:', typeof error);
+                    console.error('Error constructor:', error?.constructor?.name);
+                    
+                    // Try to extract any useful information
+                    let errorInfo = 'No error information available';
+                    if (error) {
+                        if (typeof error === 'string') {
+                            errorInfo = error;
+                        } else if (error.message) {
+                            errorInfo = error.message;
+                        } else if (error.toString && typeof error.toString === 'function') {
+                            try {
+                                errorInfo = error.toString();
+                            } catch (e) {
+                                errorInfo = 'Error in toString()';
+                            }
+                        }
+                    }
+                    
+                    console.error('Extracted error info:', errorInfo);
+                    
+                    // Specific handling for nonce/token issues
+                    console.error('🔍 This appears to be a nonce/token validation issue.');
+                    console.error('Common causes and solutions:');
+                    console.error('1. ❌ Invalid/corrupted browser state - Try clearing browser data');
+                    console.error('2. ❌ PKCE nonce validation failed - Disabled PKCE in this attempt');
+                    console.error('3. ❌ Keycloak client configuration issue');
+                    console.error('4. ❌ Browser security policies blocking token validation');
+                    console.error('');
+                    console.error('🛠️ Troubleshooting steps:');
+                    console.error('1. Clear browser cache and cookies');
+                    console.error('2. Check Keycloak client settings for "MindBridgeClient"');
+                    console.error('3. Ensure client has "Standard Flow" enabled');
+                    console.error('4. Check valid redirect URIs in Keycloak client config');
+                    
+                    // Check if this might be a CORS or network issue
+                    if (errorInfo.includes('NetworkError') || errorInfo.includes('CORS') || errorInfo.includes('Failed to fetch')) {
+                        console.error('This appears to be a network/CORS issue. Make sure:');
+                        console.error('1. Keycloak server is running on http://localhost:8080');
+                        console.error('2. CORS is properly configured in Keycloak');
+                        console.error('3. The realm "MindBridge" exists');
+                        console.error('4. The client "MindBridgeClient" is configured');
+                    }
+                    
+                    initializationInProgress = false;
+                    if (DEVELOPMENT_MODE) {
+                        console.log('Falling back to development mode due to init error');
+                        authMode = 'development';
+                        initializationCompleted = true;
+                        showLoginFallback();
+                    } else {
+                        showKeycloakError();
+                    }
+                });
+            } catch (error) {
+                console.error('Exception during Keycloak instance creation:', error);
+                console.error('Raw exception object:', error);
+                console.error('Exception type:', typeof error);
+                
+                // Check if it's a reference error (Keycloak not defined)
+                if (error instanceof ReferenceError) {
+                    console.error('ReferenceError detected - Keycloak library may not be loaded properly');
+                } else if (error instanceof TypeError) {
+                    console.error('TypeError detected - Check Keycloak constructor arguments');
+                }
+                
+                initializationInProgress = false;
+                if (DEVELOPMENT_MODE) {
+                    console.log('Using development mode due to exception');
+                    authMode = 'development';
+                    initializationCompleted = true;
+                    showLoginFallback();
+                } else {
+                    showKeycloakError();
+                }
+            }
+        }
+        
+        async function checkKeycloakAvailability() {
+            try {
+                const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/.well-known/openid-configuration`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                return response.ok;
+            } catch (error) {
+                console.log('Keycloak health check failed:', error?.message || 'Unknown error');
+                console.log('Full error details:', {
+                    name: error?.name,
+                    message: error?.message,
+                    stack: error?.stack
+                });
+                return false;
+            }
+        }
+        
+        function showMainApp() {
+            // Hide loading screen
+            const authLoading = document.getElementById('authLoading');
+            if (authLoading) {
+                authLoading.style.display = 'none';
+            }
+            
+            // Show main app
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) {
+                appContainer.style.display = 'grid';
+            }
+            
+            // Update user info from Keycloak token
+            if (keycloakInstance && keycloakInstance.tokenParsed) {
+                updateUserInfoFromKeycloak();
+            }
+            
+            // Initialize layout and components only once
+            if (!window.mainAppInitialized) {
+                window.mainAppInitialized = true;
+                setTimeout(() => {
+                    // Fix layout dimensions
+                    adjustLayoutDimensions();
+                    
+                    if (typeof initWebSocket === 'function' && !connected) {
+                        initWebSocket();
+                    }
+                    if (typeof updateSessionInfo === 'function') {
+                        updateSessionInfo();
+                        // Clear any existing interval first
+                        if (window.sessionInfoInterval) {
+                            clearInterval(window.sessionInfoInterval);
+                        }
+                        window.sessionInfoInterval = setInterval(updateSessionInfo, 1000);
+                    }
+                    // Initialize message input handlers
+                    if (typeof initializeMessageInput === 'function') {
+                        initializeMessageInput();
+                    }
+                }, 100);
+            }
+        }
+        
+        function adjustLayoutDimensions() {
+            const appContainer = document.querySelector('.app-container');
+            const messagesContainer = document.querySelector('.messages');
+            const inputContainer = document.querySelector('.input-container');
+            
+            if (!appContainer || !messagesContainer || !inputContainer) return;
+            
+            // Calculate available height for messages
+            const windowHeight = window.innerHeight;
+            const appHeight = appContainer.offsetHeight;
+            const inputHeight = inputContainer.offsetHeight || 90;
+            const headerHeight = 80; // Approximate header height
+            
+            const availableHeight = appHeight - inputHeight - headerHeight - 40; // 40px for padding
+            messagesContainer.style.maxHeight = Math.max(200, availableHeight) + 'px';
+            
+            console.log('Layout adjusted - Messages max height:', availableHeight + 'px');
+        }
+        
+        // Adjust layout on window resize
+        window.addEventListener('resize', adjustLayoutDimensions);
+        
+        function updateUserInfoFromKeycloak() {
+            const userInfo = keycloakInstance.tokenParsed;
+            const avatar = document.querySelector('.avatar');
+            const userName = document.querySelector('.user-info div:nth-child(2) div:first-child');
+            const userId = document.querySelector('.user-info div:nth-child(2) div:last-child');
+            
+            if (avatar && userName && userId) {
+                avatar.textContent = (userInfo.given_name?.[0] || '') + (userInfo.family_name?.[0] || 'U');
+                userName.textContent = userInfo.name || userInfo.preferred_username || 'User';
+                userId.textContent = `Patient ID: #${userInfo.sub?.slice(-5) || '12345'}`;
+            }
+        }
+        
+        function showLoginFallback() {
+            // Hide loading screen
+            const authLoading = document.getElementById('authLoading');
+            if (authLoading) {
+                authLoading.style.display = 'none';
+            }
+            
+            const appContainer = document.querySelector('.app-container');
+            appContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; background: white; border-radius: 20px; padding: 40px;">
+                    <div style="width: 100%; max-width: 400px; text-align: center;">
+                        <h1 style="color: #4a90e2; margin-bottom: 10px; font-size: 2.5rem;">🧠 MindBridge</h1>
+                        <p style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">Healthcare Provider Portal</p>
+                        
+                        <div id="authModeIndicator" style="background: #e3f2fd; color: #1976d2; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 12px; text-align: center;"></div>
+                        
+                        <div id="loginError" style="display: none; background: #fee; color: #c33; padding: 10px; border-radius: 5px; margin-bottom: 20px;"></div>
+                        
+                        <form id="loginForm" style="margin-bottom: 30px;">
+                            <input type="text" id="username" placeholder="Username" required 
+                                   style="width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 16px; box-sizing: border-box;" />
+                            <input type="password" id="password" placeholder="Password" required 
+                                   style="width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 16px; box-sizing: border-box;" />
+                            <button type="submit" id="loginBtn" 
+                                    style="width: 100%; padding: 15px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 20px;">
+                                Sign In
+                            </button>
+                        </form>
+                        
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-bottom: 20px;">
+                            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">OR</p>
+                        </div>
+                        
+                        <button onclick="loginWithGoogle()" 
+                                style="width: 100%; padding: 12px; background: #4285f4; color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="white"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white"/>
+                            </svg>
+                            Continue with Google
+                        </button>
+                        
+                        <button onclick="loginWithGitHub()" 
+                                style="width: 100%; padding: 12px; background: #24292e; color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599-.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492 .997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            Continue with GitHub
+                        </button>
+                        
+                        <p style="color: #999; font-size: 12px;">Secure healthcare-compliant authentication</p>
+                    </div>
+                </div>
+            `;
+            appContainer.style.display = 'flex';
+            appContainer.style.alignItems = 'center';
+            appContainer.style.justifyContent = 'center';
+            
+            // Update auth mode indicator
+            const authIndicator = document.getElementById('authModeIndicator');
+            if (authMode === 'development') {
+                authIndicator.textContent = '🔧 Development Mode: Enter any username/password';
+                authIndicator.style.background = '#fff3cd';
+                authIndicator.style.color = '#856404';
+            } else {
+                authIndicator.textContent = '🔐 Production Mode: Use real Keycloak credentials';
+            }
+            
+            // Add login handlers
+            document.getElementById('loginForm').addEventListener('submit', handleDirectLogin);
+        }
+        
+        async function handleDirectLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            
+            loginBtn.textContent = 'Signing in...';
+            loginBtn.disabled = true;
+            loginError.style.display = 'none';
+            
+            try {
+                if (authMode === 'development') {
+                    // Development mode - simple validation
+                    if (username && password) {
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+                        
+                        // Create mock JWT token
+                        const mockToken = createMockJWT(username);
+                        
+                        localStorage.setItem('token', mockToken);
+                        localStorage.setItem('refreshToken', 'dev-refresh-token-456');
+                        
+                        location.reload();
+                    } else {
+                        throw new Error('Username and password are required');
+                    }
+                } else {
+                    // Keycloak mode - direct login using Resource Owner Password Credentials Grant
+                    const formData = new URLSearchParams();
+                    formData.append('grant_type', 'password');
+                    formData.append('client_id', KEYCLOAK_CONFIG.clientId);
+                    formData.append('username', username);
+                    formData.append('password', password);
+                    
+                    const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData.toString(),
+                    });
+                    
+                    if (response.ok) {
+                        const tokenResponse = await response.json();
+                        
+                        localStorage.setItem('token', tokenResponse.access_token);
+                        localStorage.setItem('refreshToken', tokenResponse.refresh_token);
+                        
+                        location.reload();
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.error_description || error.error || 'Login failed');
+                    }
+                }
+            } catch (error) {
+                loginError.textContent = error.message || 'Login failed';
+                loginError.style.display = 'block';
+                loginBtn.textContent = 'Sign In';
+                loginBtn.disabled = false;
+            }
+        }
+        
+        function createMockJWT(username) {
+            // Create a mock JWT token for development
+            const header = { alg: 'HS256', typ: 'JWT' };
+            const payload = {
+                sub: 'dev-user-001',
+                name: username || 'Development User',
+                given_name: username?.split(' ')[0] || 'Dev',
+                family_name: username?.split(' ')[1] || 'User',
+                preferred_username: username || 'devuser',
+                email: `${username || 'dev'}@mindbridge.local`,
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour
+            };
+            
+            // Simple base64 encoding (not a real JWT, just for demo)
+            const encodedHeader = btoa(JSON.stringify(header));
+            const encodedPayload = btoa(JSON.stringify(payload));
+            return `${encodedHeader}.${encodedPayload}.mock-signature`;
+        }
+        
+        function showKeycloakError() {
+            // Hide loading screen
+            const authLoading = document.getElementById('authLoading');
+            if (authLoading) {
+                authLoading.style.display = 'none';
+            }
+            
+            const appContainer = document.querySelector('.app-container');
+            appContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; background: white; border-radius: 20px; padding: 40px;">
+                    <div style="width: 100%; max-width: 400px; text-align: center;">
+                        <h1 style="color: #ef4444; margin-bottom: 10px; font-size: 2.5rem;">🚫 Authentication Error</h1>
+                        <p style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">Cannot connect to Keycloak server</p>
+                        
+                        <div style="background: #fee; color: #c33; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: left;">
+                            <strong>Keycloak server not found:</strong><br>
+                            ${KEYCLOAK_CONFIG.url}<br><br>
+                            Please ensure:
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Keycloak is running</li>
+                                <li>Realm '${KEYCLOAK_CONFIG.realm}' exists</li>
+                                <li>Client '${KEYCLOAK_CONFIG.clientId}' is configured</li>
+                            </ul>
+                        </div>
+                        
+                        <button onclick="enableDevelopmentMode()" 
+                                style="width: 100%; padding: 15px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">
+                            🔧 Use Development Mode
+                        </button>
+                        
+                        <button onclick="location.reload()" 
+                                style="width: 100%; padding: 12px; background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; border-radius: 10px; font-size: 14px; cursor: pointer;">
+                            🔄 Retry Connection
+                        </button>
+                    </div>
+                </div>
+            `;
+            appContainer.style.display = 'flex';
+        }
+        
+        function enableDevelopmentMode() {
+            authMode = 'development';
+            showLoginFallback();
+        }
+        
+        function getRedirectUri() {
+            // Handle different environments (IDE server, local server, etc.)
+            const currentUrl = window.location.href;
+            if (currentUrl.includes('localhost:63342')) {
+                // IntelliJ/WebStorm IDE server - use the actual file URL
+                return currentUrl.split('?')[0]; // Remove query parameters
+            }
+            // For other local servers or direct file access
+            return window.location.origin + window.location.pathname;
+        }
+        
+        function loginWithGoogle() {
+            const redirectUri = getRedirectUri();
+            const googleLoginUrl = `${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CONFIG.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid email profile&kc_idp_hint=google`;
+            console.log('Google login redirect URI:', redirectUri);
+            window.location.href = googleLoginUrl;
+        }
+        
+        function loginWithGitHub() {
+            const redirectUri = getRedirectUri();
+            const githubLoginUrl = `${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CONFIG.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid email profile&kc_idp_hint=github`;
+            console.log('GitHub login redirect URI:', redirectUri);
+            window.location.href = githubLoginUrl;
+        }
+        
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                console.error('Failed to decode JWT:', error);
+                return {};
+            }
+        }
+        
+        // Global logout function for the logout button
+        async function keycloakLogout() {
+            console.log('🚪 Starting logout process...');
+            
+            // Prevent multiple logout attempts
+            if (window.logoutInProgress) {
+                console.log('Logout already in progress, skipping...');
+                return;
+            }
+            window.logoutInProgress = true;
+            
+            // 1. Disconnect WebSocket if connected
+            if (typeof stompClient !== 'undefined' && stompClient && stompClient.connected) {
+                console.log('📡 Disconnecting WebSocket...');
+                try {
+                    stompClient.deactivate();
+                    console.log('✅ WebSocket disconnected successfully');
+                } catch (error) {
+                    console.warn('⚠️ Error disconnecting WebSocket:', error);
+                }
+            }
+            
+            // 2. Get current token and refresh token before clearing storage
+            const currentToken = keycloakInstance?.token || localStorage.getItem('token');
+            const currentRefreshToken = keycloakInstance?.refreshToken || localStorage.getItem('refreshToken');
+            
+            // 3. Handle Keycloak server logout to actually end the session
+            if (currentToken) {
+                console.log('🔐 Ending Keycloak session on server...');
+                
+                try {
+                    // First, call the logout endpoint to end the server session
+                    const logoutEndpoint = `${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/logout`;
+                    
+                    const formData = new URLSearchParams();
+                    formData.append('client_id', KEYCLOAK_CONFIG.clientId);
+                    if (currentRefreshToken) {
+                        formData.append('refresh_token', currentRefreshToken);
+                    }
+                    
+                    const response = await fetch(logoutEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': `Bearer ${currentToken}`
+                        },
+                        body: formData.toString()
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Successfully ended Keycloak session');
+                    } else {
+                        console.warn('⚠️ Keycloak logout returned status:', response.status);
+                    }
+                    
+                } catch (fetchError) {
+                    console.warn('⚠️ Error calling Keycloak logout endpoint:', fetchError);
+                }
+            }
+            
+            // 4. Clear all local data
+            console.log('🧹 Clearing all local data...');
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 5. Clear Keycloak instance if it exists
+            if (keycloakInstance) {
+                try {
+                    if (keycloakInstance.clearToken) {
+                        keycloakInstance.clearToken();
+                    }
+                    keycloakInstance.authenticated = false;
+                    keycloakInstance.token = null;
+                    keycloakInstance.refreshToken = null;
+                } catch (error) {
+                    console.warn('Error clearing Keycloak instance:', error);
+                }
+            }
+            
+            // 6. Reset application state
+            if (typeof currentUser !== 'undefined') {
+                currentUser = null;
+            }
+            resetInitializationState();
+            
+            // 7. Navigate to clean URL with logout flag
+            console.log('💻 Redirecting to clean logout URL...');
+            const cleanUrl = window.location.origin + window.location.pathname + '?logout=true';
+            window.location.href = cleanUrl;
+        }
+    </script>
+
+    <script>
+        // WebSocket connection (authentication variables are in the first script block)
+        let stompClient = null;
+        let connected = false;
+        let connectionAttempts = 0;
+        const maxRetries = 5;
+        
+        // Session tracking
+        let sessionStartTime = Date.now();
+        let messageCount = 0;
+        let currentRole = 'CBT Therapist';
+        let crisisMode = false;
+
+        // Agent roles and responses
+        const agentRoles = {
+            'CBT Therapist': {
+                description: 'Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.',
+                responses: [
+                    "I notice you're experiencing some challenging thoughts. Let's explore what evidence supports or contradicts these thoughts.",
+                    "That sounds like a common cognitive distortion called 'all-or-nothing thinking'. Let's break this down together.",
+                    "What would you tell a friend who was experiencing the same situation? Sometimes we're kinder to others than ourselves."
+                ]
+            },
+            'Mindfulness Coach': {
+                description: 'Guiding you through mindfulness practices and helping you stay present in the moment.',
+                responses: [
+                    "Let's take a moment to ground ourselves. Can you name 5 things you can see around you right now?",
+                    "I hear that you're feeling overwhelmed. Let's try a brief breathing exercise together. Breathe in for 4, hold for 4, out for 4.",
+                    "Notice how you're sitting right now. Feel your feet on the ground and your back against the chair. You are safe in this moment."
+                ]
+            },
+            'Crisis Counselor': {
+                description: 'Providing immediate support and safety planning during crisis situations.',
+                responses: [
+                    "I'm here with you right now. You are not alone. Let's focus on keeping you safe. Are you in immediate physical danger?",
+                    "Thank you for reaching out. That takes courage. Let's work together to get through this moment. What's one small thing that might help right now?",
+                    "I'm concerned about what you've shared. Would you be willing to contact a crisis helpline with me? I can help you find the right number."
+                ]
+            }
+        };
+
+        // Crisis detection keywords
+        const crisisKeywords = ['hurt myself', 'end it all', 'suicide', 'kill myself', 'want to die', 'hopeless', 'can\'t go on'];
+
+        // Note: Keycloak authentication is handled in the first script block above
+
+        // Initialize WebSocket connection with STOMP
+        function initWebSocket() {
+            try {
+                stompClient = new StompJs.Client({
+                    brokerURL: 'ws://localhost:8081/agent/mindbridge',
+                    connectHeaders: getAuthHeaders(),
+                    debug: function (str) {
+                        console.log('STOMP: ' + str);
+                    },
+                    reconnectDelay: 5000,
+                    heartbeatIncoming: 4000,
+                    heartbeatOutgoing: 4000,
+                });
+                stompClient.onConnect = function (frame) {
+                    console.log('STOMP Connected: ' + frame);
+                    connected = true;
+                    updateConnectionStatus(true);
+                    connectionAttempts = 0;
+                    
+                    // Subscribe to user-specific queue
+                    stompClient.subscribe('/user/queue/chat', function (message) {
+                        console.log("Raw WebSocket message received:", message.body);
+                        try {
+                            const chatMessage = JSON.parse(message.body);
+                            console.log("Parsed WebSocket message:", chatMessage);
+                            handleWebSocketMessage(chatMessage);
+                        } catch (error) {
+                            console.error('Error parsing WebSocket message:', error);
+                            console.error('Raw message body:', message.body);
+                            // Try to handle as plain text
+                            handleWebSocketMessage({ content: message.body, type: 'chat' });
+                        }
+                    });
+                };
+
+                stompClient.onStompError = function (frame) {
+                    console.error('STOMP error: ' + frame.headers['message']);
+                    console.error('Details: ' + frame.body);
+                    connected = false;
+                    updateConnectionStatus(false);
+                };
+
+                stompClient.onWebSocketClose = function (event) {
+                    console.log('WebSocket connection closed');
+                    connected = false;
+                    updateConnectionStatus(false);
+                    
+                    // Attempt to reconnect
+                    if (connectionAttempts < maxRetries) {
+                        connectionAttempts++;
+                        console.log(`Reconnection attempt ${connectionAttempts}/${maxRetries}`);
+                        setTimeout(() => {
+                            stompClient.activate();
+                        }, 2000 * connectionAttempts);
+                    }
+                };
+
+                stompClient.activate();
+
+            } catch (error) {
+                console.error('Failed to create STOMP connection:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // Removed old sync getAuthHeaders - now using async version below
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            const dotElement = document.getElementById('statusDot');
+            const textElement = document.getElementById('connectionText');
+            
+            if (connected) {
+                statusElement.classList.remove('disconnected');
+                dotElement.classList.remove('disconnected');
+                textElement.textContent = 'WebSocket Connected';
+            } else {
+                statusElement.classList.add('disconnected');
+                dotElement.classList.add('disconnected');
+                textElement.textContent = 'Offline Mode';
+            }
+        }
+
+        function handleWebSocketMessage(message) {
+            console.log('Handling WebSocket message:', message);
+            
+            // Handle incoming WebSocket messages
+            if (message.type === 'chat' || message.content) {
+                // Display the message content
+                const content = message.content || message.message || JSON.stringify(message);
+                const agentRole = message.agentRole || message.agentName || currentRole;
+                addMessage(content, false, agentRole);
+            } else if (message.type === 'role_switch') {
+                switchAgentRole(message.role);
+            } else if (message.type === 'crisis_alert') {
+                activateCrisisMode();
+            } else {
+                // Fallback: treat any message as a chat message
+                console.log('Unknown message format, treating as chat:', message);
+                const content = message.content || message.message || message.text || JSON.stringify(message);
+                addMessage(content, false, currentRole);
+            }
+        }
+
+        function sendWebSocketMessage(content) {
+            if (stompClient && connected) {
+                const message = {
+                    content: content,
+                    timestamp: new Date(),
+                    type: 'user'
+                };
+                
+                stompClient.publish({
+                    destination: '/app/agent/conversation',
+                    body: JSON.stringify(message)
+                });
+                return true;
+            }
+            return false;
+        }
+
+        function updateSessionInfo() {
+            const elapsed = Date.now() - sessionStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('sessionTime').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            document.getElementById('messageCount').textContent = messageCount;
+        }
+
+        function detectCrisis(message) {
+            const lowerMessage = message.toLowerCase();
+            return crisisKeywords.some(keyword => lowerMessage.includes(keyword));
+        }
+
+        function switchAgentRole(newRole) {
+            if (currentRole === newRole) return;
+
+            currentRole = newRole;
+            const roleInfo = agentRoles[newRole];
+
+            document.getElementById('currentRole').textContent = newRole;
+            document.getElementById('roleDescription').textContent = roleInfo.description;
+
+            // Visual feedback for role switch
+            const agentStatus = document.querySelector('.agent-status');
+            agentStatus.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                agentStatus.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function activateCrisisMode() {
+            crisisMode = true;
+            switchAgentRole('Crisis Counselor');
+
+            // Show crisis alert
+            const crisisAlert = document.getElementById('crisisAlert');
+            crisisAlert.classList.add('active');
+
+            // Update crisis monitor
+            const crisisMonitor = document.getElementById('crisisMonitor');
+            crisisMonitor.classList.add('alert');
+            crisisMonitor.innerHTML = `
+                <div class="crisis-status">🚨 Crisis Detected</div>
+                <div style="font-size: 12px;">Emergency protocols active</div>
+            `;
+
+            setTimeout(() => {
+                crisisAlert.classList.remove('active');
+            }, 5000);
+        }
+
+        function addMessage(content, isUser = false, role = null) {
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'agent'}`;
+
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${isUser ? 'JD' : 'AI'}</div>
+                <div class="message-content">
+                    ${!isUser && role ? `<div class="agent-role-tag">${role}</div>` : ''}
+                    ${content}
+                    <div class="timestamp">${timestamp}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+
+            if (isUser) {
+                messageCount++;
+                if (typeof updateSessionInfo === 'function') {
+                    updateSessionInfo();
+                }
+            }
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('active');
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('active');
+        }
+
+        function getAgentResponse(userMessage) {
+            // Detect if user needs different therapeutic approach
+            const lowerMessage = userMessage.toLowerCase();
+
+            if (detectCrisis(lowerMessage)) {
+                if (!crisisMode) activateCrisisMode();
+                return agentRoles['Crisis Counselor'].responses[Math.floor(Math.random() * agentRoles['Crisis Counselor'].responses.length)];
+            }
+
+            // Reset crisis mode if no crisis detected
+            if (crisisMode && !detectCrisis(lowerMessage)) {
+                crisisMode = false;
+                const crisisMonitor = document.getElementById('crisisMonitor');
+                crisisMonitor.classList.remove('alert');
+                crisisMonitor.innerHTML = `
+                    <div class="crisis-status">✅ Safe Zone</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Continuous monitoring active</div>
+                `;
+            }
+
+            // Determine appropriate role based on message content
+            if (lowerMessage.includes('anxious') || lowerMessage.includes('stressed') || lowerMessage.includes('overwhelmed')) {
+                switchAgentRole('Mindfulness Coach');
+            } else if (lowerMessage.includes('thinking') || lowerMessage.includes('thoughts') || lowerMessage.includes('negative')) {
+                switchAgentRole('CBT Therapist');
+            }
+
+            const responses = agentRoles[currentRole].responses;
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            
+            // Clear input and reset height
+            input.value = '';
+            input.style.height = '50px'; // Reset to min height
+            input.focus(); // Keep focus for next message
+
+            // Try to send via WebSocket first
+            const sentViaWS = sendWebSocketMessage(message);
+
+            if (!sentViaWS) {
+                // Fallback to local simulation if WebSocket is not available
+                showTypingIndicator();
+
+                // Simulate AI processing time
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const response = getAgentResponse(message);
+                    addMessage(response, false, currentRole);
+                }, 1500 + Math.random() * 1000); // 1.5-2.5 second delay
+            }
+        }
+
+        // Event listeners (initialized when main app is shown)
+        function initializeMessageInput() {
+            const messageInput = document.getElementById('messageInput');
+            if (!messageInput) {
+                console.log('Message input not found, retrying...');
+                setTimeout(initializeMessageInput, 500);
+                return;
+            }
+            
+            // Remove existing listeners to prevent duplicates
+            messageInput.removeEventListener('keypress', handleKeyPress);
+            messageInput.removeEventListener('input', handleInputResize);
+            
+            // Add event listeners
+            messageInput.addEventListener('keypress', handleKeyPress);
+            messageInput.addEventListener('input', handleInputResize);
+            
+            // Set initial height
+            messageInput.style.height = '50px';
+            
+            console.log('Message input initialized successfully');
+        }
+        
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function handleInputResize() {
+            // Reset height to calculate new height
+            this.style.height = 'auto';
+            
+            // Calculate new height within bounds
+            const newHeight = Math.max(50, Math.min(this.scrollHeight, 120));
+            this.style.height = newHeight + 'px';
+            
+            // Ensure the input container stays within bounds
+            const inputContainer = this.closest('.input-container');
+            if (inputContainer) {
+                const containerHeight = Math.max(90, Math.min(180, newHeight + 40));
+                inputContainer.style.minHeight = containerHeight + 'px';
+                
+                // Adjust messages container to account for input height changes
+                const messagesContainer = document.querySelector('.messages');
+                if (messagesContainer) {
+                    const availableHeight = window.innerHeight - 200 - containerHeight;
+                    messagesContainer.style.maxHeight = availableHeight + 'px';
+                }
+            }
+        }
+
+        // Legacy logout function (keeping for compatibility)
+        function logout() {
+            keycloakLogout();
+        }
+
+        // Note: DOMContentLoaded listener is already defined in the Keycloak auth section above
+        
+        // Reactive token refresh: Only refresh when token actually expires
+        async function refreshTokenAfterExpiry() {
+            console.log('Access token expired, attempting refresh...');
+            
+            if (keycloakInstance && keycloakInstance.authenticated) {
+                try {
+                    // Force refresh using Keycloak
+                    const refreshed = await keycloakInstance.updateToken(-1); // Force refresh
+                    if (refreshed) {
+                        localStorage.setItem('token', keycloakInstance.token);
+                        if (keycloakInstance.refreshToken) {
+                            localStorage.setItem('refreshToken', keycloakInstance.refreshToken);
+                        }
+                        console.log('✅ Token refreshed successfully after expiry');
+                        return keycloakInstance.token;
+                    }
+                } catch (error) {
+                    console.error('❌ Refresh token also expired or invalid:', error);
+                    console.log('Forcing re-login...');
+                    keycloakLogout();
+                    throw new Error('Refresh failed - user needs to re-login');
+                }
+            } else {
+                // Manual refresh token exchange for non-Keycloak flows
+                const refreshToken = localStorage.getItem('refreshToken');
+                if (refreshToken) {
+                    try {
+                        const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                'grant_type': 'refresh_token',
+                                'client_id': KEYCLOAK_CONFIG.clientId,
+                                'refresh_token': refreshToken
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const tokenData = await response.json();
+                            localStorage.setItem('token', tokenData.access_token);
+                            localStorage.setItem('refreshToken', tokenData.refresh_token);
+                            console.log('✅ Token refreshed successfully using refresh token');
+                            return tokenData.access_token;
+                        } else {
+                            throw new Error('Refresh token request failed');
+                        }
+                    } catch (error) {
+                        console.error('❌ Refresh token exchange failed:', error);
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        console.log('Forcing re-login...');
+                        window.location.reload(); // Force re-authentication
+                        throw error;
+                    }
+                } else {
+                    console.log('No refresh token available, forcing re-login...');
+                    window.location.reload();
+                    throw new Error('No refresh token available');
+                }
+            }
+        }
+
+        // API call wrapper with automatic token refresh on 401
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const token = keycloakInstance?.token || localStorage.getItem('token');
+            
+            // Add auth header
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+            
+            try {
+                const response = await fetch(url, { ...options, headers });
+                
+                // If token expired (401), try to refresh and retry
+                if (response.status === 401) {
+                    console.log('Received 401 - token expired, attempting refresh...');
+                    const newToken = await refreshTokenAfterExpiry();
+                    
+                    // Retry the original request with new token
+                    const retryHeaders = {
+                        ...options.headers,
+                        'Authorization': `Bearer ${newToken}`
+                    };
+                    
+                    console.log('Retrying original request with new token...');
+                    return fetch(url, { ...options, headers: retryHeaders });
+                }
+                
+                return response;
+            } catch (error) {
+                console.error('Authenticated request failed:', error);
+                throw error;
+            }
+        }
+
+        // Simple auth headers for WebSocket (no auto-refresh needed for initial connection)
+        function getAuthHeaders() {
+            const headers = {};
+            const currentToken = keycloakInstance?.token || localStorage.getItem('token');
+            if (currentToken) {
+                headers['Authorization'] = `Bearer ${currentToken}`;
+                headers['X-Auth-Token'] = currentToken;
+            }
+            return headers;
+        }
+    </script>
+</body>
+</html>
