@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindBridge AI - Therapeutic Platform</title>
+    <link rel="icon" href="favicon.png" type="image/png" />
     <style>
         * {
             margin: 0;
@@ -133,6 +134,8 @@
             display: flex;
             flex-direction: column;
             background: #fafafa;
+            border-bottom-right-radius: 20px;
+            overflow: hidden;
         }
 
         .header {
@@ -200,15 +203,61 @@
             padding: 30px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 8px;
             min-height: 0;
-            max-height: calc(100vh - 300px);
         }
 
         .message {
             display: flex;
-            gap: 15px;
             animation: messageSlide 0.3s ease-out;
+            margin-bottom: 2px;
+            justify-content: flex-start;
+        }
+        
+        .message + .message {
+            margin-top: 2px;
+        }
+        
+        .message.user + .message.user .message-content {
+            border-radius: 18px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .message.agent + .message.agent .message-content {
+            border-radius: 18px;
+            border-bottom-left-radius: 8px;
+        }
+        
+        .message.user:first-child .message-content,
+        .message.user:not(.user) + .message.user .message-content,
+        .timestamp-header + .message.user .message-content {
+            border-top-right-radius: 18px;
+        }
+        
+        .message.agent:first-child .message-content,
+        .message.agent:not(.agent) + .message.agent .message-content,
+        .timestamp-header + .message.agent .message-content {
+            border-top-left-radius: 18px;
+        }
+        
+        .message.user:last-child .message-content,
+        .message.user + .message:not(.user) .message-content {
+            border-bottom-right-radius: 8px;
+        }
+        
+        .message.agent:last-child .message-content,
+        .message.agent + .message:not(.agent) .message-content {
+            border-bottom-left-radius: 8px;
+        }
+        
+        .timestamp-header {
+            text-align: center;
+            color: #8E8E93;
+            font-size: 13px;
+            font-weight: 400;
+            margin: 20px 0 15px 0;
+            pointer-events: none;
+            user-select: none;
         }
 
         @keyframes messageSlide {
@@ -223,67 +272,33 @@
         }
 
         .message.user {
-            flex-direction: row-reverse;
+            justify-content: flex-end;
         }
 
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .message.user .message-avatar {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-        }
-
-        .message.agent .message-avatar {
-            background: linear-gradient(45deg, #4ade80, #22c55e);
-        }
 
         .message-content {
             max-width: 70%;
-            padding: 15px 20px;
-            border-radius: 18px;
-            line-height: 1.5;
+            padding: 12px 18px;
+            border-radius: 25px;
+            line-height: 1.4;
             position: relative;
+            font-size: 16px;
+            word-wrap: break-word;
         }
 
         .message.user .message-content {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: #007AFF;
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 8px;
         }
 
         .message.agent .message-content {
-            background: white;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: #E5E5EA;
+            color: #000000;
+            border-bottom-left-radius: 8px;
         }
 
-        .agent-role-tag {
-            display: inline-block;
-            background: #4ade80;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
 
-        .timestamp {
-            font-size: 11px;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
 
         .typing-indicator {
             display: none;
@@ -329,73 +344,114 @@
         }
 
         .input-container {
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px;
             display: flex;
-            gap: 15px;
             align-items: flex-end;
-            min-height: 90px;
-            max-height: 180px;
+            gap: 12px;
             flex-shrink: 0;
-            position: relative;
-            z-index: 1;
+            border-bottom-right-radius: 20px;
+            min-height: 64px;
         }
 
         .input-wrapper {
             flex: 1;
-            position: relative;
-            min-width: 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            min-height: 44px;
+        }
+
+        .text-input-container {
+            flex: 1;
+            background: #F2F2F7;
+            border-radius: 20px;
+            padding: 8px 16px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .text-input-container:focus-within {
+            background: #FFFFFF;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
         }
 
         .message-input {
             width: 100%;
-            border: 2px solid #e5e7eb;
-            border-radius: 20px;
-            padding: 15px 20px;
-            font-size: 16px;
-            resize: none;
+            border: none;
             outline: none;
-            transition: all 0.3s ease;
+            background: transparent;
+            font-size: 16px;
+            line-height: 20px;
+            resize: none;
+            min-height: 20px;
             max-height: 120px;
-            min-height: 50px;
-            box-sizing: border-box;
             overflow-y: auto;
-            word-wrap: break-word;
-            line-height: 1.4;
+            font-family: inherit;
+            color: #000;
         }
 
-        .message-input:focus {
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        .message-input::placeholder {
+            color: #8E8E93;
         }
 
         .send-button {
-            background: linear-gradient(45deg, #4a90e2, #357abd);
-            color: white;
+            width: 32px;
+            height: 32px;
             border: none;
+            background: #007AFF;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+            transition: all 0.2s ease;
             flex-shrink: 0;
-            align-self: flex-end;
-        }
-
-        .send-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
-        }
-
-        .send-button:disabled {
+            margin-bottom: 6px;
             opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+            transform: scale(0.8);
+        }
+
+        .send-button.active {
+            opacity: 1;
+            transform: scale(1);
+            background: #007AFF;
+        }
+
+        .send-button.active:hover {
+            background: #0056CC;
+            transform: scale(1.05);
+        }
+
+        .send-button svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+            transform: translateX(1px);
+        }
+
+        /* Custom scrollbar for textarea */
+        .message-input::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .message-input::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .message-input::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+        }
+
+        .message-input::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .crisis-alert {
@@ -560,7 +616,7 @@
                 <div class="user-info">
                     <div class="avatar">JD</div>
                     <div>
-                        <div style="font-weight: 600;">John Doe</div>
+                        <div style="font-weight: 600;">Honne</div>
                         <div style="font-size: 14px; color: #6b7280;">Patient ID: #12345</div>
                     </div>
                 </div>
@@ -584,20 +640,10 @@
 
             <div class="chat-container">
                 <div class="messages" id="messages">
-                    <div class="message agent">
-                        <div class="message-avatar">AI</div>
-                        <div class="message-content">
-                            <div class="agent-role-tag">CBT Therapist</div>
-                            Hello! I'm your adaptive AI therapeutic companion. I can switch between different therapeutic approaches based on what you need most right now. How are you feeling today?
-                            <div class="timestamp">Just now</div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="typing-indicator" id="typingIndicator">
-                    <div class="message-avatar" style="background: linear-gradient(45deg, #4ade80, #22c55e);">AI</div>
-                    <div>
-                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">AI is thinking...</div>
+                    <div style="max-width: 70%; padding: 12px 18px; border-radius: 25px; background: #E5E5EA; position: relative; border-bottom-left-radius: 8px;">
                         <div class="typing-dots">
                             <div class="typing-dot"></div>
                             <div class="typing-dot"></div>
@@ -608,19 +654,22 @@
 
                 <div class="input-container">
                     <div class="input-wrapper">
-                        <textarea
-                            class="message-input"
-                            id="messageInput"
-                            placeholder="Share what's on your mind... Your message is private and secure."
-                            rows="1"
-                        ></textarea>
+                        <div class="text-input-container">
+                            <textarea 
+                                class="message-input" 
+                                id="messageInput" 
+                                rows="1"
+                                maxlength="1000"
+                                placeholder="Message"
+                            ></textarea>
+                        </div>
+
+                        <button class="send-button" id="sendButton" title="Send message">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                            </svg>
+                        </button>
                     </div>
-                    <button class="send-button" id="sendButton" onclick="sendMessage()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>
@@ -633,27 +682,37 @@
 
     <!-- Authentication Guard -->
     <script>
-        // Keycloak configuration from your React app
+        // API Configuration - automatically detects environment
+        const API_CONFIG = {
+            // Auto-detect if running locally or on cloud
+            isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+            
+            // Base URLs that change between environments
+            get keycloakUrl() {
+                return this.isLocal ? 'http://localhost:8080' : 'https://auth.honne.app';
+            },
+            
+            get backendUrl() {
+                return this.isLocal ? 'http://localhost:8082' : 'https://mindbridge.honne.app';
+            },
+
+            get websocketUrl() {
+                const protocol = this.isLocal ? 'ws' : 'wss';
+                const host = this.isLocal ? 'localhost:8082' : 'mindbridge.honne.app';
+                return `${protocol}://${host}/v1/agent/mindbridge`;
+            }
+        };
+
+        // Keycloak configuration using dynamic URL
         const KEYCLOAK_CONFIG = {
-            url: 'http://localhost:8080',
+            url: API_CONFIG.keycloakUrl,
             realm: 'MindBridge',
             clientId: 'MindBridgeClient'
         };
         
-        // Development mode settings
-        const DEVELOPMENT_MODE = true; // Set to false when Keycloak is properly configured
-        const SKIP_KEYCLOAK = false; // Set to true to skip Keycloak entirely and use development mode
-        const MOCK_USER = {
-            id: 'dev-user-001',
-            email: 'healthcare@mindbridge.dev',
-            name: 'Healthcare Provider',
-            given_name: 'Healthcare',
-            family_name: 'Provider',
-            preferred_username: 'healthcare'
-        };
         
         let keycloakInstance = null;
-        let authMode = 'checking'; // 'checking', 'keycloak', 'development'
+        let authMode = 'checking'; // 'checking', 'keycloak'
         let initializationInProgress = false;
         let initializationCompleted = false;
         let keycloakInitAttempted = false;
@@ -733,6 +792,21 @@
         // Track if initialization has started
         let domContentLoadedHandled = false;
         
+        // Prevent back navigation to authenticated pages after logout
+        window.addEventListener('pageshow', function(event) {
+            // Check if this is a back/forward navigation
+            if (event.persisted) {
+                console.log('Page loaded from cache (back/forward navigation detected)');
+                // Check if user is actually logged out
+                const hasToken = localStorage.getItem('token') || localStorage.getItem('refreshToken');
+                if (!hasToken) {
+                    console.log('No valid tokens found, redirecting to login');
+                    window.location.replace(window.location.origin + window.location.pathname + '?logout=true');
+                    return;
+                }
+            }
+        });
+        
         // Immediately hide the page and check authentication
         document.addEventListener('DOMContentLoaded', async function() {
             if (domContentLoadedHandled || initializationInProgress || initializationCompleted) {
@@ -781,19 +855,6 @@
                 return;
             }
             
-            // Skip Keycloak entirely if configured
-            if (SKIP_KEYCLOAK) {
-                console.log('🚀 SKIP_KEYCLOAK enabled, using development mode');
-                authMode = 'development';
-                // Check for existing token even in development mode
-                const existingToken = localStorage.getItem('token');
-                if (existingToken && validateExistingToken(existingToken)) {
-                    return; // Token is valid, main app will be shown
-                }
-                initializationCompleted = true;
-                showLoginFallback();
-                return;
-            }
             
             // Check if we already have tokens
             const existingToken = localStorage.getItem('token');
@@ -946,14 +1007,7 @@
             if (typeof Keycloak === 'undefined') {
                 console.error('Keycloak library not loaded');
                 initializationInProgress = false;
-                if (DEVELOPMENT_MODE) {
-                    console.log('Falling back to development mode');
-                    authMode = 'development';
-                    initializationCompleted = true;
-                    showLoginFallback();
-                } else {
-                    showKeycloakError();
-                }
+                showKeycloakError();
                 return;
             }
             
@@ -966,18 +1020,11 @@
                 console.error('❌ Keycloak server not available at:', KEYCLOAK_CONFIG.url);
                 console.error('Please check:');
                 console.error('1. Keycloak server is running');
-                console.error('2. Server is accessible at http://localhost:8080');
+                console.error('2. Server is accessible at', KEYCLOAK_CONFIG.url);
                 console.error('3. No firewall or proxy blocking the connection');
                 
                 initializationInProgress = false;
-                if (DEVELOPMENT_MODE) {
-                    console.log('✅ Using development mode as fallback');
-                    authMode = 'development';
-                    initializationCompleted = true;
-                    showLoginFallback();
-                } else {
-                    showKeycloakError();
-                }
+                showKeycloakError();
                 return;
             }
             
@@ -1030,14 +1077,7 @@
                 const initTimeout = setTimeout(() => {
                     console.error('Keycloak initialization timed out after 10 seconds');
                     initializationInProgress = false;
-                    if (DEVELOPMENT_MODE) {
-                        console.log('Falling back to development mode due to timeout');
-                        authMode = 'development';
-                        initializationCompleted = true;
-                        showLoginFallback();
-                    } else {
-                        showKeycloakError();
-                    }
+                    showKeycloakError();
                 }, 10000);
                 
                 keycloakInstance.init({
@@ -1119,21 +1159,14 @@
                     // Check if this might be a CORS or network issue
                     if (errorInfo.includes('NetworkError') || errorInfo.includes('CORS') || errorInfo.includes('Failed to fetch')) {
                         console.error('This appears to be a network/CORS issue. Make sure:');
-                        console.error('1. Keycloak server is running on http://localhost:8080');
+                        console.error('1. Keycloak server is running on', KEYCLOAK_CONFIG.url);
                         console.error('2. CORS is properly configured in Keycloak');
                         console.error('3. The realm "MindBridge" exists');
                         console.error('4. The client "MindBridgeClient" is configured');
                     }
                     
                     initializationInProgress = false;
-                    if (DEVELOPMENT_MODE) {
-                        console.log('Falling back to development mode due to init error');
-                        authMode = 'development';
-                        initializationCompleted = true;
-                        showLoginFallback();
-                    } else {
-                        showKeycloakError();
-                    }
+                    showKeycloakError();
                 });
             } catch (error) {
                 console.error('Exception during Keycloak instance creation:', error);
@@ -1148,14 +1181,7 @@
                 }
                 
                 initializationInProgress = false;
-                if (DEVELOPMENT_MODE) {
-                    console.log('Using development mode due to exception');
-                    authMode = 'development';
-                    initializationCompleted = true;
-                    showLoginFallback();
-                } else {
-                    showKeycloakError();
-                }
+                showKeycloakError();
             }
         }
         
@@ -1191,6 +1217,7 @@
             }
             
             // Update user info from Keycloak token
+
             if (keycloakInstance && keycloakInstance.tokenParsed) {
                 updateUserInfoFromKeycloak();
             }
@@ -1199,9 +1226,6 @@
             if (!window.mainAppInitialized) {
                 window.mainAppInitialized = true;
                 setTimeout(() => {
-                    // Fix layout dimensions
-                    adjustLayoutDimensions();
-                    
                     if (typeof initWebSocket === 'function' && !connected) {
                         initWebSocket();
                     }
@@ -1217,31 +1241,15 @@
                     if (typeof initializeMessageInput === 'function') {
                         initializeMessageInput();
                     }
+                    // Load chat history
+                    if (typeof loadChatHistory === 'function') {
+                        loadChatHistory();
+                    }
                 }, 100);
             }
         }
         
-        function adjustLayoutDimensions() {
-            const appContainer = document.querySelector('.app-container');
-            const messagesContainer = document.querySelector('.messages');
-            const inputContainer = document.querySelector('.input-container');
-            
-            if (!appContainer || !messagesContainer || !inputContainer) return;
-            
-            // Calculate available height for messages
-            const windowHeight = window.innerHeight;
-            const appHeight = appContainer.offsetHeight;
-            const inputHeight = inputContainer.offsetHeight || 90;
-            const headerHeight = 80; // Approximate header height
-            
-            const availableHeight = appHeight - inputHeight - headerHeight - 40; // 40px for padding
-            messagesContainer.style.maxHeight = Math.max(200, availableHeight) + 'px';
-            
-            console.log('Layout adjusted - Messages max height:', availableHeight + 'px');
-        }
-        
-        // Adjust layout on window resize
-        window.addEventListener('resize', adjustLayoutDimensions);
+        // Layout is now handled by CSS flexbox - no manual adjustments needed
         
         function updateUserInfoFromKeycloak() {
             const userInfo = keycloakInstance.tokenParsed;
@@ -1268,9 +1276,7 @@
                 <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; background: white; border-radius: 20px; padding: 40px;">
                     <div style="width: 100%; max-width: 400px; text-align: center;">
                         <h1 style="color: #4a90e2; margin-bottom: 10px; font-size: 2.5rem;">🧠 MindBridge</h1>
-                        <p style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">Healthcare Provider Portal</p>
                         
-                        <div id="authModeIndicator" style="background: #e3f2fd; color: #1976d2; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 12px; text-align: center;"></div>
                         
                         <div id="loginError" style="display: none; background: #fee; color: #c33; padding: 10px; border-radius: 5px; margin-bottom: 20px;"></div>
                         
@@ -1307,8 +1313,7 @@
                             </svg>
                             Continue with GitHub
                         </button>
-                        
-                        <p style="color: #999; font-size: 12px;">Secure healthcare-compliant authentication</p>
+
                     </div>
                 </div>
             `;
@@ -1316,15 +1321,6 @@
             appContainer.style.alignItems = 'center';
             appContainer.style.justifyContent = 'center';
             
-            // Update auth mode indicator
-            const authIndicator = document.getElementById('authModeIndicator');
-            if (authMode === 'development') {
-                authIndicator.textContent = '🔧 Development Mode: Enter any username/password';
-                authIndicator.style.background = '#fff3cd';
-                authIndicator.style.color = '#856404';
-            } else {
-                authIndicator.textContent = '🔐 Production Mode: Use real Keycloak credentials';
-            }
             
             // Add login handlers
             document.getElementById('loginForm').addEventListener('submit', handleDirectLogin);
@@ -1343,48 +1339,31 @@
             loginError.style.display = 'none';
             
             try {
-                if (authMode === 'development') {
-                    // Development mode - simple validation
-                    if (username && password) {
-                        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-                        
-                        // Create mock JWT token
-                        const mockToken = createMockJWT(username);
-                        
-                        localStorage.setItem('token', mockToken);
-                        localStorage.setItem('refreshToken', 'dev-refresh-token-456');
-                        
-                        location.reload();
-                    } else {
-                        throw new Error('Username and password are required');
-                    }
+                // Keycloak direct login using Resource Owner Password Credentials Grant
+                const formData = new URLSearchParams();
+                formData.append('grant_type', 'password');
+                formData.append('client_id', KEYCLOAK_CONFIG.clientId);
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString(),
+                });
+                
+                if (response.ok) {
+                    const tokenResponse = await response.json();
+                    
+                    localStorage.setItem('token', tokenResponse.access_token);
+                    localStorage.setItem('refreshToken', tokenResponse.refresh_token);
+                    
+                    location.reload();
                 } else {
-                    // Keycloak mode - direct login using Resource Owner Password Credentials Grant
-                    const formData = new URLSearchParams();
-                    formData.append('grant_type', 'password');
-                    formData.append('client_id', KEYCLOAK_CONFIG.clientId);
-                    formData.append('username', username);
-                    formData.append('password', password);
-                    
-                    const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: formData.toString(),
-                    });
-                    
-                    if (response.ok) {
-                        const tokenResponse = await response.json();
-                        
-                        localStorage.setItem('token', tokenResponse.access_token);
-                        localStorage.setItem('refreshToken', tokenResponse.refresh_token);
-                        
-                        location.reload();
-                    } else {
-                        const error = await response.json();
-                        throw new Error(error.error_description || error.error || 'Login failed');
-                    }
+                    const error = await response.json();
+                    throw new Error(error.error_description || error.error || 'Login failed');
                 }
             } catch (error) {
                 loginError.textContent = error.message || 'Login failed';
@@ -1392,26 +1371,6 @@
                 loginBtn.textContent = 'Sign In';
                 loginBtn.disabled = false;
             }
-        }
-        
-        function createMockJWT(username) {
-            // Create a mock JWT token for development
-            const header = { alg: 'HS256', typ: 'JWT' };
-            const payload = {
-                sub: 'dev-user-001',
-                name: username || 'Development User',
-                given_name: username?.split(' ')[0] || 'Dev',
-                family_name: username?.split(' ')[1] || 'User',
-                preferred_username: username || 'devuser',
-                email: `${username || 'dev'}@mindbridge.local`,
-                iat: Math.floor(Date.now() / 1000),
-                exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour
-            };
-            
-            // Simple base64 encoding (not a real JWT, just for demo)
-            const encodedHeader = btoa(JSON.stringify(header));
-            const encodedPayload = btoa(JSON.stringify(payload));
-            return `${encodedHeader}.${encodedPayload}.mock-signature`;
         }
         
         function showKeycloakError() {
@@ -1439,10 +1398,6 @@
                             </ul>
                         </div>
                         
-                        <button onclick="enableDevelopmentMode()" 
-                                style="width: 100%; padding: 15px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">
-                            🔧 Use Development Mode
-                        </button>
                         
                         <button onclick="location.reload()" 
                                 style="width: 100%; padding: 12px; background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; border-radius: 10px; font-size: 14px; cursor: pointer;">
@@ -1454,10 +1409,6 @@
             appContainer.style.display = 'flex';
         }
         
-        function enableDevelopmentMode() {
-            authMode = 'development';
-            showLoginFallback();
-        }
         
         function getRedirectUri() {
             // Handle different environments (IDE server, local server, etc.)
@@ -1586,10 +1537,16 @@
             }
             resetInitializationState();
             
-            // 7. Navigate to clean URL with logout flag
+            // 7. Navigate to clean URL with logout flag and clear history
             console.log('💻 Redirecting to clean logout URL...');
             const cleanUrl = window.location.origin + window.location.pathname + '?logout=true';
-            window.location.href = cleanUrl;
+            
+            // Clear browser history to prevent back navigation to authenticated pages
+            // This replaces the current history entry rather than adding a new one
+            window.history.replaceState(null, null, cleanUrl);
+            
+            // Force page reload to show login page
+            window.location.reload();
         }
     </script>
 
@@ -1605,6 +1562,7 @@
         let messageCount = 0;
         let currentRole = 'CBT Therapist';
         let crisisMode = false;
+        let lastMessageTime = null; // Track last message timestamp for gap detection
 
         // Agent roles and responses
         const agentRoles = {
@@ -1636,6 +1594,78 @@
 
         // Crisis detection keywords
         const crisisKeywords = ['hurt myself', 'end it all', 'suicide', 'kill myself', 'want to die', 'hopeless', 'can\'t go on'];
+        
+        // Timestamp utilities - optimized for performance
+        const TIME_GAP_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+        const DAY_MS = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+        
+        // Cache for formatted timestamps to avoid repeated calculations
+        const timestampCache = new Map();
+        
+        function formatTimestampHeader(timestamp) {
+            // Use cache for performance
+            const cacheKey = Math.floor(timestamp / 60000); // Cache by minute
+            if (timestampCache.has(cacheKey)) {
+                return timestampCache.get(cacheKey);
+            }
+            
+            const now = new Date();
+            const messageDate = new Date(timestamp);
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterdayStart = new Date(todayStart.getTime() - DAY_MS);
+            const weekAgo = new Date(todayStart.getTime() - 7 * DAY_MS);
+            
+            let formatted;
+            
+            if (messageDate >= todayStart) {
+                // Today - just time
+                formatted = messageDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            } else if (messageDate >= yesterdayStart) {
+                // Yesterday
+                formatted = 'Yesterday ' + messageDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            } else if (messageDate >= weekAgo) {
+                // This week - day name + time
+                formatted = messageDate.toLocaleDateString([], { weekday: 'long' }) + ' ' + 
+                           messageDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            } else {
+                // Older - date + time
+                formatted = messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' +
+                           messageDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            }
+            
+            // Cache result
+            timestampCache.set(cacheKey, formatted);
+            
+            // Limit cache size for memory efficiency
+            if (timestampCache.size > 1000) {
+                const firstKey = timestampCache.keys().next().value;
+                timestampCache.delete(firstKey);
+            }
+            
+            return formatted;
+        }
+        
+        function shouldShowTimestamp(currentTime, previousTime) {
+            if (!previousTime) return true; // First message
+            
+            const timeDiff = currentTime - previousTime;
+            if (timeDiff >= TIME_GAP_THRESHOLD) return true; // 5+ minute gap
+            
+            // Check if date changed (more precise than simple day comparison)
+            const currentDate = new Date(currentTime);
+            const previousDate = new Date(previousTime);
+            
+            return (currentDate.getDate() !== previousDate.getDate() || 
+                    currentDate.getMonth() !== previousDate.getMonth() || 
+                    currentDate.getFullYear() !== previousDate.getFullYear());
+        }
+        
+        function createTimestampHeader(timestamp) {
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'timestamp-header';
+            headerDiv.textContent = formatTimestampHeader(timestamp);
+            return headerDiv;
+        }
 
         // Note: Keycloak authentication is handled in the first script block above
 
@@ -1643,7 +1673,7 @@
         function initWebSocket() {
             try {
                 stompClient = new StompJs.Client({
-                    brokerURL: 'ws://localhost:8081/agent/mindbridge',
+                    brokerURL: API_CONFIG.websocketUrl,
                     connectHeaders: getAuthHeaders(),
                     debug: function (str) {
                         console.log('STOMP: ' + str);
@@ -1730,7 +1760,8 @@
                 // Display the message content
                 const content = message.content || message.message || JSON.stringify(message);
                 const agentRole = message.agentRole || message.agentName || currentRole;
-                addMessage(content, false, agentRole);
+                const messageTime = message.timestamp ? new Date(message.timestamp).getTime() : Date.now();
+                addMessage(content, false, agentRole, messageTime);
             } else if (message.type === 'role_switch') {
                 switchAgentRole(message.role);
             } else if (message.type === 'crisis_alert') {
@@ -1739,7 +1770,7 @@
                 // Fallback: treat any message as a chat message
                 console.log('Unknown message format, treating as chat:', message);
                 const content = message.content || message.message || message.text || JSON.stringify(message);
-                addMessage(content, false, currentRole);
+                addMessage(content, false, currentRole, Date.now());
             }
         }
 
@@ -1813,30 +1844,37 @@
             }, 5000);
         }
 
-        function addMessage(content, isUser = false, role = null) {
+        function addMessage(content, isUser = false, role = null, messageTime = null) {
             const messagesContainer = document.getElementById('messages');
             if (!messagesContainer) return;
             
+            const currentTime = messageTime || Date.now();
+            
+            // Check if we need to show a timestamp header
+            if (shouldShowTimestamp(currentTime, lastMessageTime)) {
+                const timestampHeader = createTimestampHeader(currentTime);
+                messagesContainer.appendChild(timestampHeader);
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'agent'}`;
-
-            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            messageDiv.setAttribute('data-timestamp', currentTime); // Store for potential future use
 
             messageDiv.innerHTML = `
-                <div class="message-avatar">${isUser ? 'JD' : 'AI'}</div>
                 <div class="message-content">
-                    ${!isUser && role ? `<div class="agent-role-tag">${role}</div>` : ''}
                     ${content}
-                    <div class="timestamp">${timestamp}</div>
                 </div>
             `;
 
             messagesContainer.appendChild(messageDiv);
             
-            // Smooth scroll to bottom
-            setTimeout(() => {
+            // Update last message time for gap detection
+            lastMessageTime = currentTime;
+            
+            // Optimized scroll - use requestAnimationFrame for better performance
+            requestAnimationFrame(() => {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 100);
+            });
 
             if (isUser) {
                 messageCount++;
@@ -1893,12 +1931,14 @@
 
             if (!message) return;
 
-            // Add user message
-            addMessage(message, true);
+            // Add user message with current timestamp
+            const userMessageTime = Date.now();
+            addMessage(message, true, null, userMessageTime);
             
-            // Clear input and reset height
+            // Clear input and reset to auto height
             input.value = '';
-            input.style.height = '50px'; // Reset to min height
+            input.style.height = 'auto';
+            updateSendButton(); // Update send button state
             input.focus(); // Keep focus for next message
 
             // Try to send via WebSocket first
@@ -1912,7 +1952,9 @@
                 setTimeout(() => {
                     hideTypingIndicator();
                     const response = getAgentResponse(message);
-                    addMessage(response, false, currentRole);
+                    // Add realistic response delay (slightly after user message)
+                    const responseTime = userMessageTime + 2000 + Math.random() * 1000;
+                    addMessage(response, false, currentRole, responseTime);
                 }, 1500 + Math.random() * 1000); // 1.5-2.5 second delay
             }
         }
@@ -1920,53 +1962,83 @@
         // Event listeners (initialized when main app is shown)
         function initializeMessageInput() {
             const messageInput = document.getElementById('messageInput');
-            if (!messageInput) {
-                console.log('Message input not found, retrying...');
+            const sendButton = document.getElementById('sendButton');
+            const textInputContainer = document.querySelector('.text-input-container');
+            
+            if (!messageInput || !sendButton) {
+                console.log('Message input elements not found, retrying...');
                 setTimeout(initializeMessageInput, 500);
                 return;
             }
             
             // Remove existing listeners to prevent duplicates
-            messageInput.removeEventListener('keypress', handleKeyPress);
-            messageInput.removeEventListener('input', handleInputResize);
+            messageInput.removeEventListener('keydown', handleKeyPress);
+            messageInput.removeEventListener('input', handleInputChange);
+            sendButton.removeEventListener('click', handleSendClick);
+            if (textInputContainer) {
+                textInputContainer.removeEventListener('click', handleContainerClick);
+            }
             
             // Add event listeners
-            messageInput.addEventListener('keypress', handleKeyPress);
-            messageInput.addEventListener('input', handleInputResize);
+            messageInput.addEventListener('keydown', handleKeyPress);
+            messageInput.addEventListener('input', handleInputChange);
+            sendButton.addEventListener('click', handleSendClick);
+            if (textInputContainer) {
+                textInputContainer.addEventListener('click', handleContainerClick);
+            }
             
-            // Set initial height
-            messageInput.style.height = '50px';
+            // Initialize send button state
+            updateSendButton();
             
-            console.log('Message input initialized successfully');
+            console.log('iMessage input initialized successfully');
         }
         
         function handleKeyPress(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
+                if (document.getElementById('sendButton').classList.contains('active')) {
+                    sendMessage();
+                }
+            }
+        }
+        
+        function handleInputChange(e) {
+            autoExpand(e.target);
+            updateSendButton();
+        }
+        
+        function handleSendClick() {
+            const sendButton = document.getElementById('sendButton');
+            if (sendButton.classList.contains('active')) {
                 sendMessage();
             }
         }
         
-        function handleInputResize() {
-            // Reset height to calculate new height
-            this.style.height = 'auto';
+        function handleContainerClick() {
+            document.getElementById('messageInput').focus();
+        }
+        
+        function autoExpand(textarea) {
+            textarea.style.height = 'auto';
+            const scrollHeight = textarea.scrollHeight;
+            const maxHeight = 120; // max-height in CSS
             
-            // Calculate new height within bounds
-            const newHeight = Math.max(50, Math.min(this.scrollHeight, 120));
-            this.style.height = newHeight + 'px';
+            if (scrollHeight <= maxHeight) {
+                textarea.style.height = scrollHeight + 'px';
+            } else {
+                textarea.style.height = maxHeight + 'px';
+            }
+        }
+        
+        function updateSendButton() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const hasText = messageInput.value.trim().length > 0;
             
-            // Ensure the input container stays within bounds
-            const inputContainer = this.closest('.input-container');
-            if (inputContainer) {
-                const containerHeight = Math.max(90, Math.min(180, newHeight + 40));
-                inputContainer.style.minHeight = containerHeight + 'px';
-                
-                // Adjust messages container to account for input height changes
-                const messagesContainer = document.querySelector('.messages');
-                if (messagesContainer) {
-                    const availableHeight = window.innerHeight - 200 - containerHeight;
-                    messagesContainer.style.maxHeight = availableHeight + 'px';
-                }
+            if (hasText) {
+                sendButton.classList.add('active');
+            } else {
+                sendButton.classList.remove('active');
             }
         }
 
@@ -2085,6 +2157,128 @@
                 headers['X-Auth-Token'] = currentToken;
             }
             return headers;
+        }
+
+        // Chat history API functions
+        async function fetchChatHistory() {
+            try {
+                console.log('Fetching chat history...');
+                const response = await makeAuthenticatedRequest(`${API_CONFIG.backendUrl}/v1/agent/chat/history`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const historyData = await response.json();
+                    console.log('Chat history fetched successfully:', historyData);
+                    return historyData;
+                } else {
+                    throw new Error(`Failed to fetch chat history: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error fetching chat history:', error);
+                throw error;
+            }
+        }
+
+        async function loadChatHistory() {
+            try {
+                const historyData = await fetchChatHistory();
+                
+                if (historyData && historyData.length > 0) {
+                    displayChatHistory(historyData);
+                } else {
+                    console.log('No chat history found');
+                }
+            } catch (error) {
+                console.error('Failed to load chat history:', error);
+                showHistoryError('Failed to load chat history');
+            }
+        }
+
+        function displayChatHistory(historyData) {
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) return;
+
+            // Clear existing messages and reset timestamp tracking
+            messagesContainer.innerHTML = '';
+            lastMessageTime = null;
+
+            // Sort history by timestamp for proper ordering
+            const sortedHistory = historyData.sort((a, b) => 
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            );
+
+            // Use document fragment for better performance when adding many elements
+            const fragment = document.createDocumentFragment();
+
+            // Add history messages with smart timestamps
+            sortedHistory.forEach(historyMessage => {
+                const isUser = historyMessage.type === 'user';
+                const content = historyMessage.content;
+                const messageTime = new Date(historyMessage.timestamp).getTime();
+                
+                // Check if we need a timestamp header
+                if (shouldShowTimestamp(messageTime, lastMessageTime)) {
+                    const timestampHeader = createTimestampHeader(messageTime);
+                    fragment.appendChild(timestampHeader);
+                }
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'agent'}`;
+                messageDiv.setAttribute('data-history', 'true');
+                messageDiv.setAttribute('data-timestamp', messageTime);
+
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${content}
+                    </div>
+                `;
+
+                fragment.appendChild(messageDiv);
+                lastMessageTime = messageTime;
+            });
+
+            // Add all elements at once for better performance
+            messagesContainer.appendChild(fragment);
+
+            // Add a divider between history and new messages
+            const divider = document.createElement('div');
+            divider.className = 'history-divider';
+            divider.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666; font-size: 14px; border-bottom: 1px solid #e5e7eb; margin: 10px 0;">
+                    <span style="background: #fafafa; padding: 0 15px;">Previous conversation loaded</span>
+                </div>
+            `;
+            messagesContainer.appendChild(divider);
+
+            // Optimized scroll
+            requestAnimationFrame(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+
+            console.log(`Loaded ${historyData.length} messages from chat history`);
+        }
+
+        function showHistoryError(errorMessage) {
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) return;
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message agent';
+            errorDiv.innerHTML = `
+                <div class="message-content" style="background: #fee; color: #c33;">
+                    ${errorMessage}
+                </div>
+            `;
+
+            if (messagesContainer.children.length > 0) {
+                messagesContainer.insertBefore(errorDiv, messagesContainer.children[0]);
+            } else {
+                messagesContainer.appendChild(errorDiv);
+            }
         }
     </script>
 </body>
