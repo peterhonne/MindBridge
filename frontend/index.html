@@ -1567,28 +1567,13 @@
         // Agent roles and responses
         const agentRoles = {
             'CBT Therapist': {
-                description: 'Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.',
-                responses: [
-                    "I notice you're experiencing some challenging thoughts. Let's explore what evidence supports or contradicts these thoughts.",
-                    "That sounds like a common cognitive distortion called 'all-or-nothing thinking'. Let's break this down together.",
-                    "What would you tell a friend who was experiencing the same situation? Sometimes we're kinder to others than ourselves."
-                ]
+                description: 'Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.'
             },
             'Mindfulness Coach': {
-                description: 'Guiding you through mindfulness practices and helping you stay present in the moment.',
-                responses: [
-                    "Let's take a moment to ground ourselves. Can you name 5 things you can see around you right now?",
-                    "I hear that you're feeling overwhelmed. Let's try a brief breathing exercise together. Breathe in for 4, hold for 4, out for 4.",
-                    "Notice how you're sitting right now. Feel your feet on the ground and your back against the chair. You are safe in this moment."
-                ]
+                description: 'Guiding you through mindfulness practices and helping you stay present in the moment.'
             },
             'Crisis Counselor': {
-                description: 'Providing immediate support and safety planning during crisis situations.',
-                responses: [
-                    "I'm here with you right now. You are not alone. Let's focus on keeping you safe. Are you in immediate physical danger?",
-                    "Thank you for reaching out. That takes courage. Let's work together to get through this moment. What's one small thing that might help right now?",
-                    "I'm concerned about what you've shared. Would you be willing to contact a crisis helpline with me? I can help you find the right number."
-                ]
+                description: 'Providing immediate support and safety planning during crisis situations.'
             }
         };
 
@@ -1894,36 +1879,6 @@
             document.getElementById('typingIndicator').classList.remove('active');
         }
 
-        function getAgentResponse(userMessage) {
-            // Detect if user needs different therapeutic approach
-            const lowerMessage = userMessage.toLowerCase();
-
-            if (detectCrisis(lowerMessage)) {
-                if (!crisisMode) activateCrisisMode();
-                return agentRoles['Crisis Counselor'].responses[Math.floor(Math.random() * agentRoles['Crisis Counselor'].responses.length)];
-            }
-
-            // Reset crisis mode if no crisis detected
-            if (crisisMode && !detectCrisis(lowerMessage)) {
-                crisisMode = false;
-                const crisisMonitor = document.getElementById('crisisMonitor');
-                crisisMonitor.classList.remove('alert');
-                crisisMonitor.innerHTML = `
-                    <div class="crisis-status">✅ Safe Zone</div>
-                    <div style="font-size: 12px; opacity: 0.8;">Continuous monitoring active</div>
-                `;
-            }
-
-            // Determine appropriate role based on message content
-            if (lowerMessage.includes('anxious') || lowerMessage.includes('stressed') || lowerMessage.includes('overwhelmed')) {
-                switchAgentRole('Mindfulness Coach');
-            } else if (lowerMessage.includes('thinking') || lowerMessage.includes('thoughts') || lowerMessage.includes('negative')) {
-                switchAgentRole('CBT Therapist');
-            }
-
-            const responses = agentRoles[currentRole].responses;
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
 
         function sendMessage() {
             const input = document.getElementById('messageInput');
@@ -1945,17 +1900,9 @@
             const sentViaWS = sendWebSocketMessage(message);
 
             if (!sentViaWS) {
-                // Fallback to local simulation if WebSocket is not available
-                showTypingIndicator();
-
-                // Simulate AI processing time
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    const response = getAgentResponse(message);
-                    // Add realistic response delay (slightly after user message)
-                    const responseTime = userMessageTime + 2000 + Math.random() * 1000;
-                    addMessage(response, false, currentRole, responseTime);
-                }, 1500 + Math.random() * 1000); // 1.5-2.5 second delay
+                // Show connection error message instead of automatic response
+                const errorMessage = "Connection unavailable. Please check your internet connection or try again later.";
+                addMessage(errorMessage, false, 'System', userMessageTime + 500);
             }
         }
 
@@ -2267,10 +2214,10 @@
             if (!messagesContainer) return;
 
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'message agent';
+            errorDiv.className = 'message system';
             errorDiv.innerHTML = `
-                <div class="message-content" style="background: #fee; color: #c33;">
-                    ${errorMessage}
+                <div class="message-content" style="background: #fee; color: #c33; font-size: 12px; opacity: 0.8;">
+                    ⚠️ ${errorMessage}
                 </div>
             `;
 
