@@ -1988,6 +1988,10 @@
                         if (typeof initializeMessageInput === 'function') {
                             initializeMessageInput();
                         }
+                        // Load chat history when entering chat view
+                        if (typeof loadChatHistory === 'function') {
+                            loadChatHistory();
+                        }
                         break;
                 }
             }
