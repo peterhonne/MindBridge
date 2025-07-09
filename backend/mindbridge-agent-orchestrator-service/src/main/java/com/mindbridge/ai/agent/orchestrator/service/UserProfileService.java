@@ -25,7 +25,7 @@ public class UserProfileService {
 
     public UserProfileDto getUserProfile(String userId) {
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElse(saveUser(userId)); // if not exit, save one
+                .orElseGet(() -> saveUser(userId)); // if not exit, save one
 
         return UserProfileDto.builder()
                 .username(user.getUsername())

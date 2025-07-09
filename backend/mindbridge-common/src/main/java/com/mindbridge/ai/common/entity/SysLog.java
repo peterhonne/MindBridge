@@ -51,6 +51,7 @@ public class SysLog {
 
 	private Long duration;
 
+	@Column(columnDefinition = "TEXT")
 	private String exception;
 
 	private boolean deleted = false;
