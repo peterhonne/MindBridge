@@ -1975,30 +1975,46 @@
 
             initNavigation() {
                 document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
+                    // Skip if already has event listener to prevent duplicates
+                    if (item.hasNavListener) {
+                        return;
+                    }
+                    
+                    const handleClick = (e) => {
                         const viewName = item.getAttribute('data-view');
                         if (viewName) {
                             this.navigateToView(viewName);
                         }
-                    });
+                    };
+                    
+                    item.addEventListener('click', handleClick);
+                    item.hasNavListener = true;
                 });
             }
 
             initializeViewContent(viewName) {
+                // Track initialized views to prevent duplicate API calls
+                if (!this.initializedViews) {
+                    this.initializedViews = new Set();
+                }
+                
                 // Initialize view-specific content and functionality
                 switch (viewName) {
                     case 'dashboard':
-                        if (typeof initDashboard === 'function') {
+                        if (typeof initDashboard === 'function' && !this.initializedViews.has('dashboard')) {
+                            this.initializedViews.add('dashboard');
                             initDashboard();
                         }
                         break;
                     case 'mood':
-                        if (typeof initMoodTracking === 'function') {
+                        if (typeof initMoodTracking === 'function' && !this.initializedViews.has('mood')) {
+                            this.initializedViews.add('mood');
                             initMoodTracking();
                         }
                         break;
                     case 'journal':
-                        if (typeof initJournalEntry === 'function') {
+                        if (typeof initJournalEntry === 'function' && !this.initializedViews.has('journal')) {
+                            this.initializedViews.add('journal');
                             initJournalEntry();
                         }
                         break;
@@ -2013,6 +2029,11 @@
 
             getCurrentView() {
                 return this.currentView;
+            }
+            
+            // Method to reset initialized views if needed (e.g., on logout/login)
+            resetInitializedViews() {
+                this.initializedViews = new Set();
             }
         }
 
@@ -2941,19 +2962,8 @@
             }, 3000);
         }
 
-        // Initialize mood tracking when view becomes active
-        function initMoodTrackingIfNeeded() {
-            if (appRouter && appRouter.getCurrentView() === 'mood') {
-                const moodSlider = document.getElementById('moodSlider');
-                if (moodSlider && !moodSlider.hasEventListener) {
-                    moodSlider.hasEventListener = true;
-                    initMoodTracking();
-                }
-            }
-        }
-
-        // Listen for hash changes to initialize mood tracking
-        window.addEventListener('hashchange', initMoodTrackingIfNeeded);
+        // Note: Mood tracking initialization is now handled by the main navigation system
+        // Removed duplicate hash change listener to prevent double API calls
     </script>
 
     <!-- Journal Management Module -->
