@@ -1,0 +1,97 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: mindbridge-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRE_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRE_PASSWORD}
+      - TZ=Pacific/Auckland
+      - PGTZ=Pacific/Auckland
+      - POSTGRES_DB= mindbridge
+    ports:
+      - "5432:5432"
+
+  # Redis Database
+  redis:
+    image: redis:latest
+    container_name: mindbridge-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=Pacific/Auckland
+    command: redis-server --appendonly yes
+
+  # Keycloak Service
+  keycloak:
+    image: keycloak/keycloak:latest
+    container_name: mindbridge-keycloak
+    environment:
+      - TZ=Pacific/Auckland
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/keycloak/realm-config:/opt/keycloak/data/import
+    command: ["start-dev", "--import-realm"]
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mindbridge-frontend
+    environment:
+      - TZ=Pacific/Auckland
+      # not useful now, maybe later using react
+      - KEYCLOAK_URI=${KEYCLOAK_URI}
+      - GATEWAY_URI=${GATEWAY_URI}
+    ports:
+      - "80:80"
+    depends_on:
+      - keycloak
+
+  # Agent Orchestrator Service
+  agent-service:
+    build:
+      context: ./backend/mindbridge-agent-orchestrator-service
+      dockerfile: Dockerfile
+    container_name: mindbridge-agent-service
+    ports:
+      - "8081:8080"
+    environment:
+      - KEYCLOAK_URI=${KEYCLOAK_URI}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - POSTGRE_URL=${POSTGRE_URL}
+      - POSTGRE_USERNAME=${POSTGRE_USERNAME}
+      - POSTGRE_PASSWORD=${POSTGRE_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - GEMINI_PROJECT_ID=${GEMINI_PROJECT_ID}
+      - GEMINI_LOCATION=${GEMINI_LOCATION}
+      - GEMINI_MODEL=${GEMINI_MODEL}
+      - TZ=Pacific/Auckland
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      keycloak:
+        condition: service_started
+  # Gateway Service
+  gateway-service:
+    build:
+      context: ./backend/mindbridge-gateway
+      dockerfile: Dockerfile
+    container_name: mindbridge-gateway
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+      agent-service:
+        condition: service_started
+    environment:
+      - TZ=Pacific/Auckland
+
