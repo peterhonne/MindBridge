@@ -8,6 +8,7 @@ import com.mindbridge.ai.agent.orchestrator.models.entity.MoodEntry;
 import com.mindbridge.ai.agent.orchestrator.models.entity.User;
 import com.mindbridge.ai.agent.orchestrator.repository.MoodEntryRepository;
 import com.mindbridge.ai.agent.orchestrator.repository.UserRepository;
+import com.mindbridge.ai.common.exception.UserProfileNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -37,7 +38,7 @@ public class MoodService {
         log.debug("Creating mood entry for user: {}", userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         MoodEntry moodEntry = new MoodEntry();
         moodEntry.setCode(RandomStringUtils.secure().nextAlphanumeric(8));
@@ -62,7 +63,7 @@ public class MoodService {
         log.debug("Getting mood history for user: {}", userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         Page<MoodEntry> moodEntries = moodEntryRepository
                 .findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
@@ -86,7 +87,7 @@ public class MoodService {
         LocalDateTime end = endDate.atTime(23, 59, 59);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         // Get mood entries in the date range
         List<MoodEntry> moodEntries = moodEntryRepository
@@ -155,7 +156,7 @@ public class MoodService {
                 .orElseThrow(() -> new RuntimeException("Mood entry not found"));
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         if (!moodEntry.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied");

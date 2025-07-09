@@ -7,6 +7,7 @@ import com.mindbridge.ai.agent.orchestrator.models.entity.JournalEntry;
 import com.mindbridge.ai.agent.orchestrator.models.entity.User;
 import com.mindbridge.ai.agent.orchestrator.repository.JournalEntryRepository;
 import com.mindbridge.ai.agent.orchestrator.repository.UserRepository;
+import com.mindbridge.ai.common.exception.UserProfileNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -31,7 +32,7 @@ public class JournalService {
         log.debug("Creating journal entry for user: {}", userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         JournalEntry journalEntry = new JournalEntry();
         journalEntry.setCode(RandomStringUtils.secure().nextAlphanumeric(8));
@@ -56,7 +57,7 @@ public class JournalService {
         log.debug("Getting journal entries for user: {}", userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         Page<JournalEntry> journalEntries = journalEntryRepository
                 .findByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
@@ -69,7 +70,7 @@ public class JournalService {
         log.debug("Getting journal entry: {} for user: {}", code, userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         JournalEntry journalEntry = journalEntryRepository.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Journal entry not found"));
@@ -86,7 +87,7 @@ public class JournalService {
         log.debug("Updating journal entry: {} for user: {}", code, userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         JournalEntry journalEntry = journalEntryRepository.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Journal entry not found"));
@@ -126,7 +127,7 @@ public class JournalService {
         log.debug("Deleting journal entry: {} for user: {}", code, userId);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         JournalEntry journalEntry = journalEntryRepository.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Journal entry not found"));
@@ -147,7 +148,7 @@ public class JournalService {
         log.debug("Searching journal entries for user: {} with term: {}", userId, searchTerm);
 
         User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserProfileNotFoundException(userId));
 
         List<JournalEntry> journalEntries = journalEntryRepository.searchByContent(user.getId(), searchTerm);
 

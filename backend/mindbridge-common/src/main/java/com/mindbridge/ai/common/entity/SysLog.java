@@ -54,8 +54,6 @@ public class SysLog {
 	@Column(columnDefinition = "TEXT")
 	private String exception;
 
-	private boolean deleted = false;
-
 	public void setStartTime(Long startTime){
 		this.startTime = startTime;
 		this.createTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTime), ZoneId.systemDefault());
