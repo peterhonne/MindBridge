@@ -1,0 +1,30 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /agent
+
+spring:
+  application:
+    name: agent-orchestrator-service
+
+logging:
+  level:
+    root: INFO
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true

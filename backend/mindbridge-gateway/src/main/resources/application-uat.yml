@@ -1,0 +1,35 @@
+server:
+  port: 8082
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: agent-orchestrator-chat
+              uri: ws://agent-service:8080
+              predicates:
+                - Path=/v1/agent/mindbridge/*
+              filters:
+                - StripPrefix=1
+
+            - id: agent-orchestrator
+              uri: http://agent-service:8080
+              predicates:
+                - Path=/v1/agent/**
+              filters:
+                - StripPrefix=1
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://localhost"
+                allowedMethods:
+                  - GET
+                allowedHeaders: "*"
+
+
+
+logging:
+  level:
+    root: DEBUG
