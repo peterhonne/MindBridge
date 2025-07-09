@@ -284,6 +284,37 @@
             position: relative;
             font-size: 16px;
             word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden;
+        }
+
+        /* Fix markdown content overflow */
+        .message-content ul, .message-content ol {
+            margin: 0;
+            padding-left: 20px;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-content p {
+            margin: 0 0 8px 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content strong, .message-content em {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .message.user .message-content {
@@ -677,6 +708,7 @@
 
     <!-- STOMP.js for WebSocket communication -->
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://unpkg.com/marked@9.1.2/marked.min.js"></script>
     <!-- Keycloak JS -->
     <script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.0/dist/keycloak.min.js"></script>
 
@@ -1829,6 +1861,50 @@
             }, 5000);
         }
 
+        function formatMarkdown(text) {
+            try {
+                // Use the marked library for proper markdown parsing
+                if (typeof marked !== 'undefined') {
+                    // Configure marked for inline parsing
+                    marked.setOptions({
+                        breaks: true,
+                        gfm: true
+                    });
+                    return marked.parse(text);
+                } else {
+                    // Fallback to simple formatting if marked isn't available
+                    return simpleMarkdownFormat(text);
+                }
+            } catch (error) {
+                console.error('Error formatting markdown:', error);
+                return simpleMarkdownFormat(text);
+            }
+        }
+
+        function simpleMarkdownFormat(text) {
+            // Simple fallback formatting
+            let formatted = text;
+            
+            // Convert **bold**
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert *italic*
+            formatted = formatted.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+            
+            // Convert bullet points
+            formatted = formatted.replace(/^\* (.+)$/gm, '• $1');
+            
+            // Convert line breaks
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph if needed
+            if (!formatted.includes('<p>') && !formatted.includes('<ul>')) {
+                formatted = '<p>' + formatted + '</p>';
+            }
+            
+            return formatted;
+        }
+
         function addMessage(content, isUser = false, role = null, messageTime = null) {
             const messagesContainer = document.getElementById('messages');
             if (!messagesContainer) return;
@@ -1845,9 +1921,12 @@
             messageDiv.className = `message ${isUser ? 'user' : 'agent'}`;
             messageDiv.setAttribute('data-timestamp', currentTime); // Store for potential future use
 
+            // Format content with markdown support
+            const formattedContent = isUser ? content : formatMarkdown(content);
+
             messageDiv.innerHTML = `
                 <div class="message-content">
-                    ${content}
+                    ${formattedContent}
                 </div>
             `;
 
@@ -2178,9 +2257,12 @@
                 messageDiv.setAttribute('data-history', 'true');
                 messageDiv.setAttribute('data-timestamp', messageTime);
 
+                // Format content with markdown support for agent messages
+                const formattedContent = isUser ? content : formatMarkdown(content);
+
                 messageDiv.innerHTML = `
                     <div class="message-content">
-                        ${content}
+                        ${formattedContent}
                     </div>
                 `;
 
