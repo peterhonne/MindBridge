@@ -23,7 +23,7 @@ public class ChatHistoryController {
     @SysLog("Get chat message histories")
     @GetMapping
     public ResponseEntity<List<ChatMessage>> getChatHistory() {
-        return ResponseEntity.ok(chatHistoryService.getChatHistory(SecurityUtils.getUserId()));
+        return ResponseEntity.ok(chatHistoryService.getChatHistory(SecurityUtils.getKeycloakUserId()));
     }
 
 }

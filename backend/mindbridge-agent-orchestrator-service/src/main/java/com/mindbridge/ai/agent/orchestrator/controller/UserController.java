@@ -21,7 +21,7 @@ public class UserController {
     @SysLog("Get user profile")
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDto> getUserProfile() {
-        UserProfileDto profile = userProfileService.getUserProfile(SecurityUtils.getUserId());
+        UserProfileDto profile = userProfileService.getUserProfile(SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(profile);
     }
 

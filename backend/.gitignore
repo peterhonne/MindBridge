@@ -3,5 +3,6 @@
 *.iws
 *.iml
 *.ipr
+.run/**
 
 /backend.md

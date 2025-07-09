@@ -24,7 +24,6 @@ spring:
           chat:
             options:
               model: ${GEMINI_MODEL}
-#          credentials-uri: ${GEMINI_CREDENTIALS_URI}
   data:
     redis:
       host: ${REDIS_HOST}

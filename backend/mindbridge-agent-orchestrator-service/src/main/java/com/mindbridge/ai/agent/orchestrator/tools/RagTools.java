@@ -19,8 +19,6 @@ public class RagTools {
     private final RestClient.Builder restClientBuilder;
     private final VectorStore vectorStore;
 
-
-
     public RagTools(ChatClient.Builder chatClientBuilder, RestClient.Builder restClientBuilder, VectorStore vectorStore) {
         this.chatClientBuilder = chatClientBuilder;
         this.restClientBuilder = restClientBuilder;
@@ -28,8 +26,8 @@ public class RagTools {
     }
 
 
-
-    @Tool(description = "recall memory, retrieve insights from the user's past moods, journal entries, and session logs to help explain their current emotional state or stress If the message clearly implies context retrieval (emotionally reflective, memory-seeking).")
+//    @Tool(description = "Recall previous context, memory. Retrieve insights from the user's past moods, journal entries, and session logs" +
+//            " to help explain their current emotional state or stress If the message clearly implies context retrieval (emotionally reflective, memory-seeking).")
     public String recallMemory(String query) {
         log.info("retrieving user's previous session log");
 
@@ -60,7 +58,7 @@ public class RagTools {
 
                                 Follow these rules strictly:
 
-                                1. If the answer is not in the context, return nothing"
+                                1. If the answer is not in the context, return "I don't know"
                                 2. Do NOT include any phrases such as "Based on the context," "The provided information," "According to the data," or similar introductory explanations.
                                 3. Your answer should be concise and direct, without referencing the source of information.
 
@@ -84,8 +82,8 @@ public class RagTools {
                 .content();
 
     }
-    @Tool(description = "Retrieve information by searching the google scholar")
-    public String googleScholarSearchRetriever(String query) {
+    @Tool(description = "search for articles for additional information")
+    public String searchArticlesForInformation(String query) {
         log.info("searching google scholar");
         return "";
     }

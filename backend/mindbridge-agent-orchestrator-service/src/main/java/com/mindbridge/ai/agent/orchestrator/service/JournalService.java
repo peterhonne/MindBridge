@@ -81,6 +81,7 @@ public class JournalService {
         return mapToDto(journalEntry);
     }
 
+
     public JournalEntryDto updateJournalEntry(String code, UpdateJournalEntryRequest request, String userId) {
         log.debug("Updating journal entry: {} for user: {}", code, userId);
 
@@ -114,6 +115,7 @@ public class JournalService {
         journalEntry = journalEntryRepository.save(journalEntry);
 
         // Regenerate embeddings since content changed
+        // TODO update the embedding
         embeddingService.generateEmbeddingForJournalEntry(journalEntry);
 
         log.debug("Updated journal entry: {}", code);

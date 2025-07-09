@@ -14,7 +14,7 @@ public class SecurityUtils {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    public String getUserId() {
+    public String getKeycloakUserId() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 

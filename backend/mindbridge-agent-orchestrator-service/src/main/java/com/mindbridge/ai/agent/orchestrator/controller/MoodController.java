@@ -25,14 +25,14 @@ public class MoodController {
 
     @PostMapping
     public ResponseEntity<MoodEntryDto> createMoodEntry(@Valid @RequestBody CreateMoodEntryRequest request) {
-        MoodEntryDto moodEntry = moodTrackingService.createMoodEntry(request, SecurityUtils.getUserId());
+        MoodEntryDto moodEntry = moodTrackingService.createMoodEntry(request, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(moodEntry);
     }
 
     @GetMapping("/history")
     public ResponseEntity<Page<MoodEntryDto>> getMoodHistory(@RequestParam(value = "page", defaultValue = "0", required = false) int pageNumber,
                                                              @RequestParam(value = "size", defaultValue = "20", required = false) int pageSize) {
-        Page<MoodEntryDto> moodHistory = moodTrackingService.getMoodHistory(SecurityUtils.getUserId(),
+        Page<MoodEntryDto> moodHistory = moodTrackingService.getMoodHistory(SecurityUtils.getKeycloakUserId(),
                 PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
         return ResponseEntity.ok(moodHistory);
     }
@@ -40,13 +40,13 @@ public class MoodController {
     @GetMapping("/trends")
     public ResponseEntity<MoodStatsDto> getMoodTrends(@RequestParam(required = false) LocalDate startDate,
                                                       @RequestParam(required = false) LocalDate endDate) {
-        MoodStatsDto stats = moodTrackingService.getMoodStats(SecurityUtils.getUserId(), startDate, endDate);
+        MoodStatsDto stats = moodTrackingService.getMoodStats(SecurityUtils.getKeycloakUserId(), startDate, endDate);
         return ResponseEntity.ok(stats);
     }
 
     @DeleteMapping("/{code}")
     public ResponseEntity<Void> deleteJournalEntry(@PathVariable String code) {
-        moodTrackingService.deleteMoodEntry(code, SecurityUtils.getUserId());
+        moodTrackingService.deleteMoodEntry(code, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.noContent().build();
     }
 }

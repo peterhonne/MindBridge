@@ -26,7 +26,7 @@ public class JournalController {
     @SysLog("create journal entry")
     @PostMapping
     public ResponseEntity<JournalEntryDto> createJournalEntry(@Valid @RequestBody CreateJournalEntryRequest request) {
-        JournalEntryDto journalEntry = journalService.createJournalEntry(request, SecurityUtils.getUserId());
+        JournalEntryDto journalEntry = journalService.createJournalEntry(request, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(journalEntry);
     }
 
@@ -34,7 +34,7 @@ public class JournalController {
     @GetMapping
     public ResponseEntity<Page<JournalEntryDto>> getJournalEntries(@RequestParam(value = "page", defaultValue = "0", required = false) int pageNumber,
                                                                    @RequestParam(value = "size", defaultValue = "20", required = false) int pageSize) {
-        Page<JournalEntryDto> entries = journalService.getJournalEntries(SecurityUtils.getUserId(),
+        Page<JournalEntryDto> entries = journalService.getJournalEntries(SecurityUtils.getKeycloakUserId(),
                 PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
         return ResponseEntity.ok(entries);
     }
@@ -42,7 +42,7 @@ public class JournalController {
     @SysLog("get journal entries by code")
     @GetMapping("/{code}")
     public ResponseEntity<JournalEntryDto> getJournalEntry(@PathVariable String code) {
-        JournalEntryDto entry = journalService.getJournalEntry(code, SecurityUtils.getUserId());
+        JournalEntryDto entry = journalService.getJournalEntry(code, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(entry);
     }
 
@@ -50,21 +50,21 @@ public class JournalController {
     @PutMapping("/{code}")
     public ResponseEntity<JournalEntryDto> updateJournalEntry(@PathVariable String code,
             @Valid @RequestBody UpdateJournalEntryRequest request) {
-        JournalEntryDto entry = journalService.updateJournalEntry(code, request, SecurityUtils.getUserId());
+        JournalEntryDto entry = journalService.updateJournalEntry(code, request, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(entry);
     }
 
     @SysLog("delete journal entry by code")
     @DeleteMapping("/{code}")
     public ResponseEntity<Void> deleteJournalEntry(@PathVariable String code) {
-        journalService.deleteJournalEntry(code, SecurityUtils.getUserId());
+        journalService.deleteJournalEntry(code, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.noContent().build();
     }
 
     @SysLog("search journal entry by keyword")
     @GetMapping("/search")
     public ResponseEntity<List<JournalEntryDto>> searchJournalEntries(@RequestParam String query) {
-        List<JournalEntryDto> entries = journalService.searchJournalEntries(query, SecurityUtils.getUserId());
+        List<JournalEntryDto> entries = journalService.searchJournalEntries(query, SecurityUtils.getKeycloakUserId());
         return ResponseEntity.ok(entries);
     }
 

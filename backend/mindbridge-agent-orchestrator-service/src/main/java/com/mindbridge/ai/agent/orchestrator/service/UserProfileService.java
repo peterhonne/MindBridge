@@ -18,6 +18,11 @@ public class UserProfileService {
 
     private final UserRepository userRepository;
 
+    public User getUser(String userId) {
+        return userRepository.findByKeycloakUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+
     public UserProfileDto getUserProfile(String userId) {
         User user = userRepository.findByKeycloakUserId(userId)
                 .orElse(saveUser(userId)); // if not exit, save one

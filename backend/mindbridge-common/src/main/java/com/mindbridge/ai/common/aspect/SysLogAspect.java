@@ -44,7 +44,7 @@ public class SysLogAspect {
         CONTEXT_HOLDER.set(logVo);
         Object obj = point.proceed();
         logVo.setCreateBy(SecurityUtils.getUsername());
-        logVo.setCreateId(SecurityUtils.getUserId());
+        logVo.setCreateId(SecurityUtils.getKeycloakUserId());
         publishEvent(logVo);
         return obj;
     }
