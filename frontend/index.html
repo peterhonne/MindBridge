@@ -45,6 +45,108 @@
             gap: 25px;
         }
 
+        /* Navigation styles */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* View management */
+        .view {
+            display: none;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Mood tracking styles */
+        .mood-tag {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            display: inline-block;
+        }
+
+        .mood-tag:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .mood-tag.selected {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-color: #3b82f6;
+        }
+
+        /* Mood slider customization */
+        #moodSlider {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        #moodSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #moodSlider::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
         .logo {
             font-size: 24px;
             font-weight: bold;
@@ -165,29 +267,6 @@
             font-weight: bold;
         }
 
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #22c55e;
-        }
-
-        .connection-status.disconnected {
-            color: #ef4444;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.disconnected {
-            background: #ef4444;
-        }
 
         .chat-container {
             flex: 1;
@@ -607,99 +686,332 @@
         <div class="sidebar">
             <div class="logo">🧠 MindBridge AI</div>
 
-            <div class="agent-status">
-                <div class="agent-role">
-                    <span class="role-indicator"></span>
-                    <span id="currentRole">CBT Therapist</span>
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <div class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
                 </div>
-                <div class="agent-description" id="roleDescription">
-                    Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.
+                <div class="nav-item" data-view="mood">
+                    <span class="nav-icon">😊</span>
+                    <span>Mood Tracking</span>
                 </div>
-            </div>
+                <div class="nav-item" data-view="journal">
+                    <span class="nav-icon">📝</span>
+                    <span>Journal Entry</span>
+                </div>
+                <div class="nav-item" data-view="chat">
+                    <span class="nav-icon">💬</span>
+                    <span>Companion</span>
+                </div>
+            </nav>
 
-            <div class="session-info">
-                <h3>Session Info</h3>
-                <div class="info-item">
-                    <span>Duration:</span>
-                    <span id="sessionTime">00:00</span>
-                </div>
-                <div class="info-item">
-                    <span>Messages:</span>
-                    <span id="messageCount">0</span>
-                </div>
-                <div class="info-item">
-                    <span>Mood Trend:</span>
-                    <span id="moodTrend">📈 Improving</span>
-                </div>
-            </div>
-
-            <div class="crisis-monitor" id="crisisMonitor">
-                <div class="crisis-status">✅ Safe Zone</div>
-                <div style="font-size: 12px; opacity: 0.8;">
-                    Continuous monitoring active
-                </div>
-            </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Common Header -->
             <div class="header">
                 <div class="user-info">
-                    <div class="avatar">JD</div>
+                    <div class="avatar" id="userAvatar">JD</div>
                     <div>
-                        <div style="font-weight: 600;">Honne</div>
-                        <div style="font-size: 14px; color: #6b7280;">Patient ID: #12345</div>
+                        <div style="font-weight: 600;" id="userName">Loading...</div>
+                        <div style="font-size: 14px; color: #6b7280;" id="userInfo">Loading user info...</div>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 20px;">
-                    <div class="connection-status" id="connectionStatus">
-                        <span class="status-dot" id="statusDot"></span>
-                        <span id="connectionText">Connecting...</span>
-                    </div>
                     <button onclick="keycloakLogout()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
                         Logout
                     </button>
                 </div>
             </div>
 
-            <div class="crisis-alert" id="crisisAlert">
-                <span class="crisis-icon">🚨</span>
-                <div>
-                    <strong>Crisis Mode Activated</strong> - Switching to Crisis Counselor mode for immediate support.
-                </div>
-            </div>
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active">
+                <div style="padding: 30px; overflow-y: auto; flex: 1;">
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <h1 style="color: #333; margin-bottom: 30px; font-size: 2rem;">Welcome back, <span id="dashboardUserName">User</span>!</h1>
+                        
+                        <!-- Quick Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Today's Mood</h3>
+                                <div style="font-size: 2.5rem; color: #333;" id="recentMoodScore">-</div>
+                                <div style="color: #666; font-size: 14px;" id="recentMoodDate">No entries yet</div>
+                            </div>
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #4a90e2; margin-bottom: 10px;">7-Day Average</h3>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 2.5rem; color: #333;" id="weeklyMoodAvg">-</div>
+                                    <div style="font-size: 1.5rem;" id="moodTrendIcon">📊</div>
+                                </div>
+                                <div style="color: #666; font-size: 14px;" id="moodTrendText">Calculating...</div>
+                            </div>
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Journal Entries</h3>
+                                <div style="font-size: 2.5rem; color: #333;" id="journalCount">-</div>
+                                <div style="color: #666; font-size: 14px;">Total entries</div>
+                            </div>
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Streak</h3>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 2.5rem; color: #333;" id="streakCount">-</div>
+                                    <div style="font-size: 1.5rem;">🔥</div>
+                                </div>
+                                <div style="color: #666; font-size: 14px;" id="streakText">Days active</div>
+                            </div>
+                        </div>
 
-            <div class="chat-container">
-                <div class="messages" id="messages">
-                </div>
+                        <!-- Mood Trend Chart -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="color: #333; margin: 0;">7-Day Mood Trend</h2>
+                                <div style="display: flex; gap: 15px; font-size: 14px; color: #666;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <div style="width: 12px; height: 12px; background: #4a90e2; border-radius: 50%;"></div>
+                                        <span>Mood Score</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="moodChart" style="height: 200px; position: relative; background: #f9fafb; border-radius: 10px; padding: 20px;">
+                                <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">
+                                    Loading mood trend...
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="typing-indicator" id="typingIndicator">
-                    <div style="max-width: 70%; padding: 12px 18px; border-radius: 25px; background: #E5E5EA; position: relative; border-bottom-left-radius: 8px;">
-                        <div class="typing-dots">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
+                        <!-- Insights Panel -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px; color: white;">
+                            <h2 style="color: white; margin: 0 0 15px 0;">🧠 Your Wellness Insights</h2>
+                            <div id="dailyInsight" style="font-size: 16px; line-height: 1.6; opacity: 0.9; margin-bottom: 15px;">
+                                Analyzing your mood patterns...
+                            </div>
+                            <div id="additionalInsights" style="font-size: 14px; line-height: 1.5; opacity: 0.8;">
+                                <!-- Additional insights will appear here -->
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #333; margin-bottom: 15px;">Recent Mood Entries</h3>
+                                <div id="recentMoodEntries">Loading...</div>
+                            </div>
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <h3 style="color: #333; margin-bottom: 15px;">Recent Journal Entries</h3>
+                                <div id="recentJournalEntries">Loading...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="input-container">
-                    <div class="input-wrapper">
-                        <div class="text-input-container">
-                            <textarea 
-                                class="message-input" 
-                                id="messageInput" 
-                                rows="1"
-                                maxlength="1000"
-                                placeholder="Message"
-                            ></textarea>
+            <!-- Mood Tracking View -->
+            <div id="mood-view" class="view">
+                <div style="padding: 30px; overflow-y: auto; flex: 1;">
+                    <div style="max-width: 800px; margin: 0 auto;">
+                        <h1 style="color: #333; margin-bottom: 30px; font-size: 2rem;">Mood Tracking</h1>
+                        
+                        <!-- Mood Entry Form -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                            <h2 style="color: #4a90e2; margin-bottom: 20px;">How are you feeling today?</h2>
+                            
+                            <form id="moodEntryForm">
+                                <!-- Mood Slider -->
+                                <div style="margin-bottom: 25px;">
+                                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Mood Score (1-10)</label>
+                                    <div style="position: relative; margin: 20px 0;">
+                                        <input type="range" id="moodSlider" min="1" max="10" value="5" 
+                                               style="width: 100%; height: 8px; background: linear-gradient(to right, #ef4444, #f59e0b, #10b981); border-radius: 5px; outline: none;">
+                                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #666;">
+                                            <span>1 - Very Low</span>
+                                            <span>5 - Neutral</span>
+                                            <span>10 - Excellent</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 15px;">
+                                        <span style="font-size: 3rem;" id="moodEmoji">😐</span>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #333;" id="moodScoreDisplay">5</div>
+                                    </div>
+                                </div>
+
+                                <!-- Mood Tags -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">How would you describe your mood?</label>
+                                    <div id="moodTags" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                        <span class="mood-tag" data-tag="happy">😊 Happy</span>
+                                        <span class="mood-tag" data-tag="anxious">😰 Anxious</span>
+                                        <span class="mood-tag" data-tag="sad">😢 Sad</span>
+                                        <span class="mood-tag" data-tag="excited">🤩 Excited</span>
+                                        <span class="mood-tag" data-tag="tired">😴 Tired</span>
+                                        <span class="mood-tag" data-tag="angry">😠 Angry</span>
+                                        <span class="mood-tag" data-tag="peaceful">😌 Peaceful</span>
+                                        <span class="mood-tag" data-tag="stressed">😤 Stressed</span>
+                                        <span class="mood-tag" data-tag="grateful">🙏 Grateful</span>
+                                        <span class="mood-tag" data-tag="confused">😕 Confused</span>
+                                    </div>
+                                </div>
+
+                                <!-- Notes -->
+                                <div style="margin-bottom: 20px;">
+                                    <label for="moodNotes" style="display: block; margin-bottom: 10px; font-weight: 600;">Notes (optional)</label>
+                                    <textarea id="moodNotes" placeholder="What's on your mind? Any specific thoughts or events affecting your mood?"
+                                              style="width: 100%; min-height: 80px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;"></textarea>
+                                </div>
+
+                                <button type="submit" id="saveMoodBtn" 
+                                        style="width: 100%; padding: 15px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                    Save Mood Entry
+                                </button>
+                            </form>
                         </div>
 
-                        <button class="send-button" id="sendButton" title="Send message">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
-                            </svg>
-                        </button>
+                        <!-- Mood History -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="color: #333; margin: 0;">Mood History</h2>
+                                <button onclick="loadMoodHistory()" style="padding: 8px 16px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                                    Refresh
+                                </button>
+                            </div>
+                            <div id="moodHistoryContainer">
+                                <div style="text-align: center; color: #666; padding: 20px;">Loading mood history...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Entry View -->
+            <div id="journal-view" class="view">
+                <div style="padding: 30px; overflow-y: auto; flex: 1;">
+                    <div style="max-width: 800px; margin: 0 auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <h1 style="color: #333; margin: 0; font-size: 2rem;">Journal Entry</h1>
+                            <button onclick="showNewJournalForm()" style="padding: 10px 20px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                + New Entry
+                            </button>
+                        </div>
+                        
+                        <!-- Journal Entry Form -->
+                        <div id="journalForm" style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px; display: none;">
+                            <h2 style="color: #4a90e2; margin-bottom: 20px;" id="journalFormTitle">Create New Journal Entry</h2>
+                            
+                            <form id="journalEntryForm">
+                                <input type="hidden" id="journalEntryCode" value="">
+                                
+                                <!-- Title -->
+                                <div style="margin-bottom: 20px;">
+                                    <label for="journalTitle" style="display: block; margin-bottom: 8px; font-weight: 600;">Title</label>
+                                    <input type="text" id="journalTitle" placeholder="What's on your mind today?"
+                                           style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                                </div>
+
+                                <!-- Content -->
+                                <div style="margin-bottom: 20px;">
+                                    <label for="journalContent" style="display: block; margin-bottom: 8px; font-weight: 600;">Content</label>
+                                    <textarea id="journalContent" placeholder="Write about your thoughts, feelings, experiences..."
+                                              style="width: 100%; min-height: 200px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                                </div>
+
+                                <!-- Mood Before/After -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                    <div>
+                                        <label for="moodBefore" style="display: block; margin-bottom: 8px; font-weight: 600;">Mood Before (1-10)</label>
+                                        <input type="number" id="moodBefore" min="1" max="10" placeholder="5"
+                                               style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                                    </div>
+                                    <div>
+                                        <label for="moodAfter" style="display: block; margin-bottom: 8px; font-weight: 600;">Mood After (1-10)</label>
+                                        <input type="number" id="moodAfter" min="1" max="10" placeholder="5"
+                                               style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                                    </div>
+                                </div>
+
+                                <!-- Tags -->
+                                <div style="margin-bottom: 25px;">
+                                    <label for="journalTags" style="display: block; margin-bottom: 8px; font-weight: 600;">Tags (comma-separated)</label>
+                                    <input type="text" id="journalTags" placeholder="reflection, growth, challenges, gratitude"
+                                           style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                                </div>
+
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" id="saveJournalBtn" 
+                                            style="flex: 1; padding: 15px; background: linear-gradient(45deg, #4a90e2, #357abd); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                        Save Entry
+                                    </button>
+                                    <button type="button" onclick="hideJournalForm()" 
+                                            style="padding: 15px 20px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-size: 16px; cursor: pointer;">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Search -->
+                        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="journalSearch" placeholder="Search your journal entries..."
+                                       style="flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                                <button onclick="searchJournalEntries()" style="padding: 12px 20px; background: #4a90e2; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                    Search
+                                </button>
+                                <button onclick="loadJournalEntries()" style="padding: 12px 20px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer;">
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Journal Entries List -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="color: #333; margin: 0;">Your Journal Entries</h2>
+                                <button onclick="loadJournalEntries()" style="padding: 8px 16px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                                    Refresh
+                                </button>
+                            </div>
+                            <div id="journalEntriesContainer">
+                                <div style="text-align: center; color: #666; padding: 20px;">Loading journal entries...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat View (Companion) -->
+            <div id="chat-view" class="view">
+                <div class="chat-container">
+                    <div class="messages" id="messages">
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div style="max-width: 70%; padding: 12px 18px; border-radius: 25px; background: #E5E5EA; position: relative; border-bottom-left-radius: 8px;">
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-container">
+                        <div class="input-wrapper">
+                            <div class="text-input-container">
+                                <textarea 
+                                    class="message-input" 
+                                    id="messageInput" 
+                                    rows="1"
+                                    maxlength="1000"
+                                    placeholder="Message"
+                                ></textarea>
+                            </div>
+
+                            <button class="send-button" id="sendButton" title="Send message">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -757,10 +1069,6 @@
             domContentLoadedHandled = false;
             keycloakInitAttempted = false;
             window.mainAppInitialized = false;
-            if (window.sessionInfoInterval) {
-                clearInterval(window.sessionInfoInterval);
-                window.sessionInfoInterval = null;
-            }
         }
         
         // Expose reset function globally for debugging
@@ -1258,16 +1566,18 @@
             if (!window.mainAppInitialized) {
                 window.mainAppInitialized = true;
                 setTimeout(() => {
+                    // Initialize router first
+                    if (typeof initRouter === 'function') {
+                        initRouter();
+                    }
+                    
+                    // Load user profile
+                    if (typeof initUserProfile === 'function') {
+                        initUserProfile();
+                    }
+                    
                     if (typeof initWebSocket === 'function' && !connected) {
                         initWebSocket();
-                    }
-                    if (typeof updateSessionInfo === 'function') {
-                        updateSessionInfo();
-                        // Clear any existing interval first
-                        if (window.sessionInfoInterval) {
-                            clearInterval(window.sessionInfoInterval);
-                        }
-                        window.sessionInfoInterval = setInterval(updateSessionInfo, 1000);
                     }
                     // Initialize message input handlers
                     if (typeof initializeMessageInput === 'function') {
@@ -1582,6 +1892,1360 @@
         }
     </script>
 
+    <!-- Router and Navigation System -->
+    <script>
+        // Router System for View Management
+        class AppRouter {
+            constructor() {
+                this.currentView = 'dashboard';
+                this.views = ['dashboard', 'mood', 'journal', 'chat'];
+                this.init();
+            }
+
+            init() {
+                // Handle initial hash or default to dashboard
+                this.handleHashChange();
+                
+                // Listen for hash changes
+                window.addEventListener('hashchange', () => this.handleHashChange());
+                
+                // Add click listeners to navigation items
+                this.initNavigation();
+            }
+
+            handleHashChange() {
+                const hash = window.location.hash.slice(1); // Remove #
+                const view = this.views.includes(hash) ? hash : 'dashboard';
+                this.navigateToView(view);
+            }
+
+            navigateToView(viewName) {
+                if (!this.views.includes(viewName)) return;
+                
+                // Update current view
+                this.currentView = viewName;
+                
+                // Update URL hash
+                if (window.location.hash.slice(1) !== viewName) {
+                    window.location.hash = viewName;
+                }
+                
+                // Update active navigation item
+                this.updateNavigation(viewName);
+                
+                // Show/hide views
+                this.updateViews(viewName);
+                
+                // Update sidebar components visibility
+                this.updateSidebarComponents(viewName);
+                
+                // Initialize view-specific functionality
+                this.initializeViewContent(viewName);
+            }
+
+            updateNavigation(activeView) {
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to current view
+                const activeNavItem = document.querySelector(`[data-view="${activeView}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add('active');
+                }
+            }
+
+            updateViews(activeView) {
+                // Hide all views
+                document.querySelectorAll('.view').forEach(view => {
+                    view.classList.remove('active');
+                });
+                
+                // Show active view
+                const activeViewElement = document.getElementById(`${activeView}-view`);
+                if (activeViewElement) {
+                    activeViewElement.classList.add('active');
+                }
+            }
+
+            updateSidebarComponents(activeView) {
+                // Future: Add any view-specific sidebar component logic here
+            }
+
+            initNavigation() {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const viewName = item.getAttribute('data-view');
+                        if (viewName) {
+                            this.navigateToView(viewName);
+                        }
+                    });
+                });
+            }
+
+            initializeViewContent(viewName) {
+                // Initialize view-specific content and functionality
+                switch (viewName) {
+                    case 'dashboard':
+                        if (typeof initDashboard === 'function') {
+                            initDashboard();
+                        }
+                        break;
+                    case 'mood':
+                        if (typeof initMoodTracking === 'function') {
+                            initMoodTracking();
+                        }
+                        break;
+                    case 'journal':
+                        if (typeof initJournalEntry === 'function') {
+                            initJournalEntry();
+                        }
+                        break;
+                    case 'chat':
+                        // Re-initialize chat functionality if needed
+                        if (typeof initializeMessageInput === 'function') {
+                            initializeMessageInput();
+                        }
+                        break;
+                }
+            }
+
+            getCurrentView() {
+                return this.currentView;
+            }
+        }
+
+        // Initialize router when DOM is ready
+        let appRouter;
+        
+        // Function to initialize the router (called after authentication)
+        function initRouter() {
+            if (!appRouter) {
+                appRouter = new AppRouter();
+                console.log('Router initialized successfully');
+            }
+        }
+
+        // Make router globally accessible
+        window.navigateTo = function(viewName) {
+            if (appRouter) {
+                appRouter.navigateToView(viewName);
+            }
+        };
+    </script>
+
+    <!-- User Profile and API Client -->
+    <script>
+        // API Client for User Profile and other endpoints
+        class ApiClient {
+            constructor() {
+                this.baseUrl = API_CONFIG.backendUrl + '/v1/agent';
+            }
+
+            async makeRequest(endpoint, options = {}) {
+                const url = `${this.baseUrl}${endpoint}`;
+                const token = keycloakInstance?.token || localStorage.getItem('token');
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        headers
+                    });
+                    
+                    // Handle 401 (token expired)
+                    if (response.status === 401) {
+                        console.log('Token expired, attempting refresh...');
+                        const newToken = await this.refreshTokenIfNeeded();
+                        if (newToken) {
+                            headers['Authorization'] = `Bearer ${newToken}`;
+                            return fetch(url, { ...options, headers });
+                        } else {
+                            throw new Error('Authentication failed');
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    console.error('API request failed:', error);
+                    throw error;
+                }
+            }
+
+            async refreshTokenIfNeeded() {
+                if (typeof refreshTokenAfterExpiry === 'function') {
+                    try {
+                        return await refreshTokenAfterExpiry();
+                    } catch (error) {
+                        console.error('Token refresh failed:', error);
+                        return null;
+                    }
+                }
+                return null;
+            }
+
+            // User Profile endpoints
+            async getUserProfile() {
+                const response = await this.makeRequest('/user/profile');
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch user profile: ${response.status}`);
+                }
+            }
+
+            // Mood endpoints
+            async getMoodHistory(page = 0, size = 20) {
+                const response = await this.makeRequest(`/mood/history?page=${page}&size=${size}`);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch mood history: ${response.status}`);
+                }
+            }
+
+            async getMoodTrends(startDate, endDate) {
+                let url = '/mood/trends';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await this.makeRequest(url);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch mood trends: ${response.status}`);
+                }
+            }
+
+            async createMoodEntry(moodData) {
+                const response = await this.makeRequest('/mood', {
+                    method: 'POST',
+                    body: JSON.stringify(moodData)
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to create mood entry: ${response.status}`);
+                }
+            }
+
+            // Journal endpoints
+            async getJournalEntries(page = 0, size = 20) {
+                const response = await this.makeRequest(`/journal?page=${page}&size=${size}`);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch journal entries: ${response.status}`);
+                }
+            }
+
+            async createJournalEntry(journalData) {
+                const response = await this.makeRequest('/journal', {
+                    method: 'POST',
+                    body: JSON.stringify(journalData)
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to create journal entry: ${response.status}`);
+                }
+            }
+
+            async updateJournalEntry(code, journalData) {
+                const response = await this.makeRequest(`/journal/${code}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(journalData)
+                });
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to update journal entry: ${response.status}`);
+                }
+            }
+
+            async deleteJournalEntry(code) {
+                const response = await this.makeRequest(`/journal/${code}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to delete journal entry: ${response.status}`);
+                }
+            }
+
+            async searchJournalEntries(query) {
+                const response = await this.makeRequest(`/journal/search?query=${encodeURIComponent(query)}`);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to search journal entries: ${response.status}`);
+                }
+            }
+        }
+
+        // Global API client instance
+        const apiClient = new ApiClient();
+
+        // User Profile Management
+        let userProfile = null;
+
+        async function loadUserProfile() {
+            try {
+                console.log('Loading user profile...');
+                userProfile = await apiClient.getUserProfile();
+                updateUserProfileDisplay();
+                console.log('User profile loaded successfully:', userProfile);
+            } catch (error) {
+                console.error('Failed to load user profile:', error);
+                // Show fallback if profile loading fails
+                updateUserProfileDisplay({
+                    username: 'User',
+                    email: 'user@example.com',
+                    therapyStatus: 'ACTIVE'
+                });
+            }
+        }
+
+        function updateUserProfileDisplay(profile = userProfile) {
+            if (!profile) return;
+            
+            // Update header display
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const userInfo = document.getElementById('userInfo');
+            const dashboardUserName = document.getElementById('dashboardUserName');
+            
+            if (userAvatar && profile.username) {
+                // Create initials from username
+                const initials = profile.username
+                    .split(' ')
+                    .map(name => name.charAt(0))
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
+                userAvatar.textContent = initials;
+            }
+            
+            if (userName) {
+                userName.textContent = profile.username || 'User';
+            }
+            
+            if (userInfo) {
+                userInfo.textContent = profile.email || '';
+            }
+            
+            if (dashboardUserName) {
+                dashboardUserName.textContent = profile.username || 'User';
+            }
+        }
+
+        // Initialize user profile loading (called after authentication)
+        function initUserProfile() {
+            if (window.mainAppInitialized) {
+                loadUserProfile();
+            }
+        }
+    </script>
+
+    <!-- Dashboard Module -->
+    <script>
+        // Dashboard functionality
+        let dashboardData = {
+            recentMood: null,
+            journalCount: 0,
+            recentMoodEntries: [],
+            recentJournalEntries: []
+        };
+
+        async function initDashboard() {
+            console.log('Initializing dashboard...');
+            await loadDashboardData();
+            updateDashboardDisplay();
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load recent mood entries (last 30 for analysis)
+                const moodHistory = await apiClient.getMoodHistory(0, 30);
+                dashboardData.recentMoodEntries = moodHistory.content || [];
+                if (dashboardData.recentMoodEntries.length > 0) {
+                    dashboardData.recentMood = dashboardData.recentMoodEntries[0];
+                }
+
+                // Load recent journal entries
+                const journalHistory = await apiClient.getJournalEntries(0, 20);
+                dashboardData.recentJournalEntries = journalHistory.content || [];
+                dashboardData.journalCount = journalHistory.totalElements || 0;
+
+                // Calculate analytics
+                dashboardData.analytics = calculateMoodAnalytics(dashboardData.recentMoodEntries);
+                dashboardData.streak = calculateActivityStreak(dashboardData.recentMoodEntries, dashboardData.recentJournalEntries);
+
+                console.log('Dashboard data loaded successfully:', dashboardData);
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+                // Use fallback data
+                dashboardData = {
+                    recentMood: null,
+                    journalCount: 0,
+                    recentMoodEntries: [],
+                    recentJournalEntries: [],
+                    analytics: { weeklyAverage: 0, trend: 'neutral', last7Days: [] },
+                    streak: 0
+                };
+            }
+        }
+
+        function updateDashboardDisplay() {
+            // Update mood score
+            const recentMoodScore = document.getElementById('recentMoodScore');
+            const recentMoodDate = document.getElementById('recentMoodDate');
+            
+            if (dashboardData.recentMood) {
+                if (recentMoodScore) {
+                    const emoji = getMoodEmoji(dashboardData.recentMood.moodScore);
+                    recentMoodScore.textContent = `${emoji} ${dashboardData.recentMood.moodScore}`;
+                }
+                if (recentMoodDate) {
+                    const date = new Date(dashboardData.recentMood.createdAt);
+                    recentMoodDate.textContent = date.toLocaleDateString();
+                }
+            } else {
+                if (recentMoodScore) recentMoodScore.textContent = '😐 -';
+                if (recentMoodDate) recentMoodDate.textContent = 'No entries today';
+            }
+
+            // Update 7-day average and trend
+            const weeklyMoodAvg = document.getElementById('weeklyMoodAvg');
+            const moodTrendIcon = document.getElementById('moodTrendIcon');
+            const moodTrendText = document.getElementById('moodTrendText');
+            
+            if (weeklyMoodAvg && dashboardData.analytics) {
+                weeklyMoodAvg.textContent = dashboardData.analytics.weeklyAverage.toFixed(1);
+                
+                if (moodTrendIcon) {
+                    moodTrendIcon.textContent = dashboardData.analytics.trend === 'improving' ? '📈' : 
+                                               dashboardData.analytics.trend === 'declining' ? '📉' : '📊';
+                }
+                
+                if (moodTrendText) {
+                    moodTrendText.textContent = dashboardData.analytics.trend === 'improving' ? 'Trending up!' :
+                                               dashboardData.analytics.trend === 'declining' ? 'Needs attention' : 'Stable';
+                }
+            }
+
+            // Update journal count
+            const journalCount = document.getElementById('journalCount');
+            if (journalCount) {
+                journalCount.textContent = dashboardData.journalCount;
+            }
+
+            // Update streak
+            const streakCount = document.getElementById('streakCount');
+            const streakText = document.getElementById('streakText');
+            if (streakCount) {
+                streakCount.textContent = dashboardData.streak;
+            }
+            if (streakText) {
+                streakText.textContent = dashboardData.streak === 1 ? 'Day active' : 'Days active';
+            }
+
+            // Update mood chart
+            updateMoodChart();
+            
+            // Update daily insight
+            updateDailyInsight();
+
+            // Update recent mood entries
+            updateRecentMoodDisplay();
+
+            // Update recent journal entries
+            updateRecentJournalDisplay();
+        }
+
+
+        function updateRecentMoodDisplay() {
+            const container = document.getElementById('recentMoodEntries');
+            if (!container) return;
+
+            if (dashboardData.recentMoodEntries.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">No mood entries yet</div>';
+                return;
+            }
+
+            const entriesHtml = dashboardData.recentMoodEntries.map(entry => {
+                const date = new Date(entry.createdAt);
+                const moodEmoji = getMoodEmoji(entry.moodScore);
+                return `
+                    <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 18px; margin-right: 8px;">${moodEmoji}</span>
+                            <span style="font-weight: 500;">${entry.moodScore}/10</span>
+                            ${entry.notes ? `<div style="font-size: 12px; color: #666; margin-top: 2px;">${entry.notes}</div>` : ''}
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            ${date.toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = entriesHtml;
+        }
+
+        function updateRecentJournalDisplay() {
+            const container = document.getElementById('recentJournalEntries');
+            if (!container) return;
+
+            if (dashboardData.recentJournalEntries.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic;">No journal entries yet</div>';
+                return;
+            }
+
+            const entriesHtml = dashboardData.recentJournalEntries.map(entry => {
+                const date = new Date(entry.createdAt);
+                const preview = entry.content ? entry.content.substring(0, 100) + '...' : '';
+                return `
+                    <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="font-weight: 500; margin-bottom: 4px;">${entry.title || 'Untitled'}</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">${preview}</div>
+                        <div style="font-size: 12px; color: #999;">
+                            ${date.toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = entriesHtml;
+        }
+
+        function getMoodEmoji(score) {
+            if (score >= 9) return '😄';
+            if (score >= 7) return '😊';
+            if (score >= 6) return '🙂';
+            if (score >= 5) return '😐';
+            if (score >= 3) return '🙁';
+            if (score >= 2) return '😞';
+            return '😢';
+        }
+
+        // Analytics Functions
+        function calculateMoodAnalytics(moodEntries) {
+            if (!moodEntries || moodEntries.length === 0) {
+                return { weeklyAverage: 0, trend: 'neutral', last7Days: [] };
+            }
+
+            // Get last 7 days of data
+            const now = new Date();
+            const last7Days = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                const dayStart = new Date(date.setHours(0, 0, 0, 0));
+                const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+                
+                const dayEntries = moodEntries.filter(entry => {
+                    const entryDate = new Date(entry.createdAt);
+                    return entryDate >= dayStart && entryDate <= dayEnd;
+                });
+                
+                const dayAverage = dayEntries.length > 0 
+                    ? dayEntries.reduce((sum, entry) => sum + entry.moodScore, 0) / dayEntries.length 
+                    : null;
+                
+                last7Days.push({
+                    date: dayStart,
+                    average: dayAverage,
+                    count: dayEntries.length
+                });
+            }
+
+            // Calculate weekly average
+            const validDays = last7Days.filter(day => day.average !== null);
+            const weeklyAverage = validDays.length > 0 
+                ? validDays.reduce((sum, day) => sum + day.average, 0) / validDays.length 
+                : 0;
+
+            // Determine trend
+            let trend = 'neutral';
+            if (validDays.length >= 2) {
+                const firstHalf = validDays.slice(0, Math.ceil(validDays.length / 2));
+                const secondHalf = validDays.slice(Math.floor(validDays.length / 2));
+                
+                const firstAvg = firstHalf.reduce((sum, day) => sum + day.average, 0) / firstHalf.length;
+                const secondAvg = secondHalf.reduce((sum, day) => sum + day.average, 0) / secondHalf.length;
+                
+                if (secondAvg > firstAvg + 0.5) trend = 'improving';
+                else if (secondAvg < firstAvg - 0.5) trend = 'declining';
+            }
+
+            return { weeklyAverage, trend, last7Days };
+        }
+
+        function calculateActivityStreak(moodEntries, journalEntries) {
+            const now = new Date();
+            let streak = 0;
+            
+            for (let i = 0; i < 30; i++) { // Check last 30 days
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                const dayStart = new Date(date.setHours(0, 0, 0, 0));
+                const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+                
+                const hasMoodEntry = moodEntries.some(entry => {
+                    const entryDate = new Date(entry.createdAt);
+                    return entryDate >= dayStart && entryDate <= dayEnd;
+                });
+                
+                const hasJournalEntry = journalEntries.some(entry => {
+                    const entryDate = new Date(entry.createdAt);
+                    return entryDate >= dayStart && entryDate <= dayEnd;
+                });
+                
+                if (hasMoodEntry || hasJournalEntry) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        function updateMoodChart() {
+            const chartContainer = document.getElementById('moodChart');
+            if (!chartContainer || !dashboardData.analytics) return;
+            
+            const last7Days = dashboardData.analytics.last7Days;
+            const maxScore = 10;
+            const chartHeight = 160;
+            const chartWidth = chartContainer.clientWidth - 40;
+            
+            if (last7Days.every(day => day.average === null)) {
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">No mood data for the last 7 days</div>';
+                return;
+            }
+            
+            // Create SVG chart
+            let chartHTML = `
+                <svg width="${chartWidth}" height="${chartHeight}" style="overflow: visible;">
+                    <!-- Grid lines -->
+                    ${[2, 4, 6, 8, 10].map(val => `
+                        <line x1="0" y1="${chartHeight - (val / maxScore) * chartHeight}" 
+                              x2="${chartWidth}" y2="${chartHeight - (val / maxScore) * chartHeight}" 
+                              stroke="#e5e7eb" stroke-width="1" opacity="0.5"/>
+                        <text x="-5" y="${chartHeight - (val / maxScore) * chartHeight + 4}" 
+                              fill="#9ca3af" font-size="12" text-anchor="end">${val}</text>
+                    `).join('')}
+                    
+                    <!-- Data line -->
+                    <polyline fill="none" stroke="#4a90e2" stroke-width="3" points="${
+                        last7Days.map((day, index) => {
+                            if (day.average === null) return null;
+                            const x = (index / (last7Days.length - 1)) * chartWidth;
+                            const y = chartHeight - (day.average / maxScore) * chartHeight;
+                            return `${x},${y}`;
+                        }).filter(point => point !== null).join(' ')
+                    }"/>
+                    
+                    <!-- Data points -->
+                    ${last7Days.map((day, index) => {
+                        if (day.average === null) return '';
+                        const x = (index / (last7Days.length - 1)) * chartWidth;
+                        const y = chartHeight - (day.average / maxScore) * chartHeight;
+                        return `<circle cx="${x}" cy="${y}" r="4" fill="#4a90e2"/>`;
+                    }).join('')}
+                </svg>
+                
+                <!-- Day labels -->
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #666;">
+                    ${last7Days.map(day => {
+                        const dayName = day.date.toLocaleDateString('en', { weekday: 'short' });
+                        return `<span style="text-align: center;">${dayName}</span>`;
+                    }).join('')}
+                </div>
+            `;
+            
+            chartContainer.innerHTML = chartHTML;
+        }
+
+        function updateDailyInsight() {
+            const insightContainer = document.getElementById('dailyInsight');
+            const additionalContainer = document.getElementById('additionalInsights');
+            if (!insightContainer) return;
+            
+            const allInsights = generateDataDrivenInsights();
+            
+            if (allInsights.length > 0) {
+                // Show primary insight
+                insightContainer.textContent = allInsights[0];
+                
+                // Show additional insights (up to 2 more)
+                if (additionalContainer && allInsights.length > 1) {
+                    const additionalInsights = allInsights.slice(1, 3).map(insight => 
+                        `• ${insight}`
+                    ).join('\n');
+                    additionalContainer.textContent = additionalInsights;
+                }
+            } else {
+                insightContainer.textContent = "Track your mood daily to unlock personalized insights about your mental wellness journey.";
+                if (additionalContainer) {
+                    additionalContainer.textContent = "";
+                }
+            }
+        }
+
+        function generateDailyInsight() {
+            // Generate insights based on actual user data
+            const insights = generateDataDrivenInsights();
+            
+            // Return the most relevant insight
+            if (insights.length > 0) {
+                return insights[0]; // Return the highest priority insight
+            }
+            
+            return "Track your mood daily to unlock personalized insights about your mental wellness journey.";
+        }
+
+        function generateDataDrivenInsights() {
+            const insights = [];
+            
+            if (!dashboardData.analytics || dashboardData.recentMoodEntries.length === 0) {
+                return insights;
+            }
+            
+            const { trend, weeklyAverage, last7Days } = dashboardData.analytics;
+            const moodEntries = dashboardData.recentMoodEntries;
+            const journalEntries = dashboardData.recentJournalEntries;
+            const streak = dashboardData.streak;
+            const todayMood = dashboardData.recentMood;
+            
+            // 1. Streak-based insights (highest priority)
+            if (streak >= 14) {
+                insights.push(`🔥 Outstanding! ${streak} days of consistent tracking. You're building powerful mental health habits!`);
+            } else if (streak >= 7) {
+                insights.push(`🎉 Amazing! You've been active for ${streak} days straight. Your dedication to mental wellness is inspiring!`);
+            } else if (streak >= 3) {
+                insights.push(`💪 Great momentum! ${streak} days in a row. Consistency is key to mental wellness.`);
+            }
+            
+            // 2. Trend analysis insights
+            if (trend === 'improving' && weeklyAverage > 6) {
+                insights.push(`📈 Excellent! Your mood is trending upward with a ${weeklyAverage.toFixed(1)} average. You're thriving!`);
+            } else if (trend === 'improving') {
+                insights.push(`📈 Your mood has been improving this week! Keep up the positive momentum.`);
+            } else if (trend === 'declining' && weeklyAverage < 4) {
+                insights.push(`💙 Your recent scores suggest you might need extra support. Consider reaching out or practicing self-care.`);
+            } else if (trend === 'declining') {
+                insights.push(`📉 Your mood has dipped recently. Remember, it's normal to have ups and downs.`);
+            }
+            
+            // 3. Today's mood insights
+            if (todayMood) {
+                if (todayMood.moodScore >= 9) {
+                    insights.push(`✨ You're having an exceptional day! This energy is perfect for tackling goals or helping others.`);
+                } else if (todayMood.moodScore >= 8) {
+                    insights.push(`🌟 You're feeling great today! Consider journaling about what's working well in your life.`);
+                } else if (todayMood.moodScore <= 2) {
+                    insights.push(`🤗 Today feels tough. Your feelings are valid, and reaching out for support is a sign of strength.`);
+                } else if (todayMood.moodScore <= 3) {
+                    insights.push(`💙 Tough days are part of the journey. Small acts of self-care can make a difference.`);
+                }
+                
+                // Notes-based insights
+                if (todayMood.notes && todayMood.notes.length > 20) {
+                    insights.push(`📝 Great job adding detailed notes today! Self-reflection helps build emotional awareness.`);
+                }
+            }
+            
+            // 4. Weekly performance insights
+            if (weeklyAverage >= 8) {
+                insights.push(`🌟 Your weekly average of ${weeklyAverage.toFixed(1)} shows excellent mental wellness! You're doing great.`);
+            } else if (weeklyAverage >= 7) {
+                insights.push(`😊 Your ${weeklyAverage.toFixed(1)} weekly average shows you're managing your wellness well. Keep it up!`);
+            } else if (weeklyAverage >= 5) {
+                insights.push(`📊 Your ${weeklyAverage.toFixed(1)} average shows room for growth. Small daily practices can help.`);
+            }
+            
+            // 5. Journaling insights
+            const recentJournals = journalEntries.slice(0, 7); // Last 7 entries
+            if (recentJournals.length >= 3) {
+                const moodImprovements = recentJournals.filter(entry => 
+                    entry.moodAfter && entry.moodBefore && entry.moodAfter > entry.moodBefore
+                ).length;
+                
+                if (moodImprovements >= 2) {
+                    insights.push(`📖 Journaling is really helping! ${moodImprovements} of your recent entries show mood improvement.`);
+                }
+            }
+            
+            if (journalEntries.length >= 5) {
+                insights.push(`🖊️ You've written ${journalEntries.length} journal entries! Writing is a powerful tool for mental clarity.`);
+            }
+            
+            // 6. Consistency insights
+            const daysWithEntries = last7Days.filter(day => day.count > 0).length;
+            if (daysWithEntries >= 5) {
+                insights.push(`🗓️ You've tracked your mood ${daysWithEntries} out of 7 days this week. Excellent consistency!`);
+            } else if (daysWithEntries >= 3) {
+                insights.push(`📅 You've been active ${daysWithEntries} days this week. Try for daily check-ins to see more patterns.`);
+            }
+            
+            // 7. Pattern recognition insights
+            const lowMoodDays = moodEntries.filter(entry => entry.moodScore <= 4).length;
+            const highMoodDays = moodEntries.filter(entry => entry.moodScore >= 7).length;
+            
+            if (highMoodDays > lowMoodDays * 2) {
+                insights.push(`🌈 You have more high-mood days than low ones recently. You're building resilience!`);
+            }
+            
+            // 8. Engagement insights
+            if (moodEntries.length >= 10) {
+                insights.push(`📊 With ${moodEntries.length} mood entries, you're building valuable data for self-understanding.`);
+            }
+            
+            // Sort insights by priority (streak > trend > today > weekly > others)
+            return insights;
+        }
+
+    </script>
+
+    <!-- Mood Tracking Module -->
+    <script>
+        // Mood tracking functionality
+        let moodHistoryData = [];
+        let selectedMoodTags = [];
+
+        function initMoodTracking() {
+            console.log('Initializing mood tracking...');
+            setupMoodSlider();
+            setupMoodTags();
+            setupMoodForm();
+            loadMoodHistory();
+        }
+
+        function setupMoodSlider() {
+            const moodSlider = document.getElementById('moodSlider');
+            const moodEmoji = document.getElementById('moodEmoji');
+            const moodScoreDisplay = document.getElementById('moodScoreDisplay');
+
+            if (moodSlider) {
+                moodSlider.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    updateMoodDisplay(value);
+                });
+            }
+        }
+
+        function updateMoodDisplay(score) {
+            const moodEmoji = document.getElementById('moodEmoji');
+            const moodScoreDisplay = document.getElementById('moodScoreDisplay');
+
+            if (moodEmoji) {
+                moodEmoji.textContent = getMoodEmoji(score);
+            }
+            if (moodScoreDisplay) {
+                moodScoreDisplay.textContent = score;
+            }
+        }
+
+        function setupMoodTags() {
+            const moodTags = document.querySelectorAll('.mood-tag');
+            moodTags.forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const tagValue = tag.getAttribute('data-tag');
+                    toggleMoodTag(tag, tagValue);
+                });
+            });
+        }
+
+        function toggleMoodTag(tagElement, tagValue) {
+            if (tagElement.classList.contains('selected')) {
+                tagElement.classList.remove('selected');
+                selectedMoodTags = selectedMoodTags.filter(tag => tag !== tagValue);
+            } else {
+                tagElement.classList.add('selected');
+                selectedMoodTags.push(tagValue);
+            }
+        }
+
+        function setupMoodForm() {
+            const moodForm = document.getElementById('moodEntryForm');
+            if (moodForm) {
+                moodForm.addEventListener('submit', handleMoodSubmit);
+            }
+        }
+
+        async function handleMoodSubmit(e) {
+            e.preventDefault();
+            
+            const moodSlider = document.getElementById('moodSlider');
+            const moodNotes = document.getElementById('moodNotes');
+            const saveBtn = document.getElementById('saveMoodBtn');
+
+            if (!moodSlider) return;
+
+            const moodData = {
+                moodScore: parseInt(moodSlider.value),
+                moodTags: selectedMoodTags,
+                notes: moodNotes ? moodNotes.value.trim() : ''
+            };
+
+            // Disable button and show loading state
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                await apiClient.createMoodEntry(moodData);
+                console.log('Mood entry saved successfully');
+                
+                // Reset form
+                resetMoodForm();
+                
+                // Reload mood history
+                await loadMoodHistory();
+                
+                // Show success message
+                showMoodMessage('Mood entry saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Failed to save mood entry:', error);
+                showMoodMessage('Failed to save mood entry. Please try again.', 'error');
+            } finally {
+                // Re-enable button
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Mood Entry';
+            }
+        }
+
+        function resetMoodForm() {
+            const moodSlider = document.getElementById('moodSlider');
+            const moodNotes = document.getElementById('moodNotes');
+            const moodTags = document.querySelectorAll('.mood-tag');
+
+            if (moodSlider) {
+                moodSlider.value = 5;
+                updateMoodDisplay(5);
+            }
+
+            if (moodNotes) {
+                moodNotes.value = '';
+            }
+
+            // Clear selected tags
+            moodTags.forEach(tag => tag.classList.remove('selected'));
+            selectedMoodTags = [];
+        }
+
+        async function loadMoodHistory() {
+            const container = document.getElementById('moodHistoryContainer');
+            if (!container) return;
+
+            try {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Loading mood history...</div>';
+                
+                const historyData = await apiClient.getMoodHistory(0, 20);
+                moodHistoryData = historyData.content || [];
+                
+                displayMoodHistory();
+                
+            } catch (error) {
+                console.error('Failed to load mood history:', error);
+                container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Failed to load mood history</div>';
+            }
+        }
+
+        function displayMoodHistory() {
+            const container = document.getElementById('moodHistoryContainer');
+            if (!container) return;
+
+            if (moodHistoryData.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No mood entries yet. Start tracking your mood above!</div>';
+                return;
+            }
+
+            const historyHtml = moodHistoryData.map(entry => {
+                const date = new Date(entry.createdAt);
+                const moodEmoji = getMoodEmoji(entry.moodScore);
+                const tagsHtml = entry.moodTags && entry.moodTags.length > 0 
+                    ? entry.moodTags.map(tag => `<span style="background: #f3f4f6; color: #374151; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">${tag}</span>`).join('')
+                    : '';
+
+                return `
+                    <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 15px; background: #fafafa;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 2rem;">${moodEmoji}</span>
+                                <div>
+                                    <div style="font-size: 1.2rem; font-weight: 600; color: #333;">${entry.moodScore}/10</div>
+                                    <div style="font-size: 12px; color: #666;">${date.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                        ${tagsHtml ? `<div style="margin-bottom: 10px;">${tagsHtml}</div>` : ''}
+                        ${entry.notes ? `<div style="color: #555; font-size: 14px; line-height: 1.5;">${entry.notes}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = historyHtml;
+        }
+
+        function showMoodMessage(message, type = 'info') {
+            // Create or update message element
+            let messageEl = document.getElementById('moodMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'moodMessage';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    opacity: 0;
+                    transform: translateY(-20px);
+                    transition: all 0.3s ease;
+                `;
+                document.body.appendChild(messageEl);
+            }
+
+            // Set message and style based on type
+            messageEl.textContent = message;
+            messageEl.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+
+            // Show message
+            setTimeout(() => {
+                messageEl.style.opacity = '1';
+                messageEl.style.transform = 'translateY(0)';
+            }, 10);
+
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+                messageEl.style.transform = 'translateY(-20px)';
+            }, 3000);
+        }
+
+        // Initialize mood tracking when view becomes active
+        function initMoodTrackingIfNeeded() {
+            if (appRouter && appRouter.getCurrentView() === 'mood') {
+                const moodSlider = document.getElementById('moodSlider');
+                if (moodSlider && !moodSlider.hasEventListener) {
+                    moodSlider.hasEventListener = true;
+                    initMoodTracking();
+                }
+            }
+        }
+
+        // Listen for hash changes to initialize mood tracking
+        window.addEventListener('hashchange', initMoodTrackingIfNeeded);
+    </script>
+
+    <!-- Journal Management Module -->
+    <script>
+        // Journal functionality
+        let journalData = [];
+        let currentEditingEntry = null;
+
+        function initJournalEntry() {
+            console.log('Initializing journal entry...');
+            setupJournalForm();
+            setupJournalSearch();
+            loadJournalEntries();
+        }
+
+        function setupJournalForm() {
+            const journalForm = document.getElementById('journalEntryForm');
+            if (journalForm) {
+                journalForm.addEventListener('submit', handleJournalSubmit);
+            }
+        }
+
+        function setupJournalSearch() {
+            const searchInput = document.getElementById('journalSearch');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        searchJournalEntries();
+                    }
+                });
+            }
+        }
+
+        function showNewJournalForm() {
+            currentEditingEntry = null;
+            const form = document.getElementById('journalForm');
+            const title = document.getElementById('journalFormTitle');
+            
+            if (form) form.style.display = 'block';
+            if (title) title.textContent = 'Create New Journal Entry';
+            
+            resetJournalForm();
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideJournalForm() {
+            const form = document.getElementById('journalForm');
+            if (form) form.style.display = 'none';
+            currentEditingEntry = null;
+        }
+
+        function editJournalEntry(entry) {
+            currentEditingEntry = entry;
+            const form = document.getElementById('journalForm');
+            const title = document.getElementById('journalFormTitle');
+            
+            if (form) form.style.display = 'block';
+            if (title) title.textContent = 'Edit Journal Entry';
+            
+            // Fill form with entry data
+            document.getElementById('journalEntryCode').value = entry.code || '';
+            document.getElementById('journalTitle').value = entry.title || '';
+            document.getElementById('journalContent').value = entry.content || '';
+            document.getElementById('moodBefore').value = entry.moodBefore || '';
+            document.getElementById('moodAfter').value = entry.moodAfter || '';
+            document.getElementById('journalTags').value = entry.tags ? entry.tags.join(', ') : '';
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetJournalForm() {
+            document.getElementById('journalEntryCode').value = '';
+            document.getElementById('journalTitle').value = '';
+            document.getElementById('journalContent').value = '';
+            document.getElementById('moodBefore').value = '';
+            document.getElementById('moodAfter').value = '';
+            document.getElementById('journalTags').value = '';
+        }
+
+        async function handleJournalSubmit(e) {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveJournalBtn');
+            const entryCode = document.getElementById('journalEntryCode').value;
+            const title = document.getElementById('journalTitle').value.trim();
+            const content = document.getElementById('journalContent').value.trim();
+            const moodBefore = document.getElementById('moodBefore').value;
+            const moodAfter = document.getElementById('moodAfter').value;
+            const tagsInput = document.getElementById('journalTags').value.trim();
+
+            if (!content) {
+                showJournalMessage('Please enter some content for your journal entry.', 'error');
+                return;
+            }
+
+            const journalData = {
+                title: title || null,
+                content: content,
+                moodBefore: moodBefore ? parseInt(moodBefore) : null,
+                moodAfter: moodAfter ? parseInt(moodAfter) : null,
+                tags: tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+            };
+
+            // Disable button and show loading state
+            saveBtn.disabled = true;
+            saveBtn.textContent = currentEditingEntry ? 'Updating...' : 'Saving...';
+
+            try {
+                if (currentEditingEntry && entryCode) {
+                    // Update existing entry
+                    await apiClient.updateJournalEntry(entryCode, journalData);
+                    console.log('Journal entry updated successfully');
+                    showJournalMessage('Journal entry updated successfully!', 'success');
+                } else {
+                    // Create new entry
+                    await apiClient.createJournalEntry(journalData);
+                    console.log('Journal entry created successfully');
+                    showJournalMessage('Journal entry saved successfully!', 'success');
+                }
+                
+                // Reset form and hide
+                resetJournalForm();
+                hideJournalForm();
+                
+                // Reload journal entries
+                await loadJournalEntries();
+                
+            } catch (error) {
+                console.error('Failed to save journal entry:', error);
+                showJournalMessage('Failed to save journal entry. Please try again.', 'error');
+            } finally {
+                // Re-enable button
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Entry';
+            }
+        }
+
+        async function loadJournalEntries() {
+            const container = document.getElementById('journalEntriesContainer');
+            if (!container) return;
+
+            try {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Loading journal entries...</div>';
+                
+                const entriesData = await apiClient.getJournalEntries(0, 50);
+                journalData = entriesData.content || [];
+                
+                displayJournalEntries(journalData);
+                
+            } catch (error) {
+                console.error('Failed to load journal entries:', error);
+                container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Failed to load journal entries</div>';
+            }
+        }
+
+        async function searchJournalEntries() {
+            const searchInput = document.getElementById('journalSearch');
+            const query = searchInput ? searchInput.value.trim() : '';
+            
+            if (!query) {
+                loadJournalEntries();
+                return;
+            }
+
+            const container = document.getElementById('journalEntriesContainer');
+            if (!container) return;
+
+            try {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Searching...</div>';
+                
+                const searchResults = await apiClient.searchJournalEntries(query);
+                
+                displayJournalEntries(searchResults);
+                
+            } catch (error) {
+                console.error('Failed to search journal entries:', error);
+                container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Search failed</div>';
+            }
+        }
+
+        function displayJournalEntries(entries) {
+            const container = document.getElementById('journalEntriesContainer');
+            if (!container) return;
+
+            if (entries.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No journal entries found. Create your first entry above!</div>';
+                return;
+            }
+
+            const entriesHtml = entries.map(entry => {
+                const date = new Date(entry.createdAt);
+                const preview = entry.content ? (entry.content.length > 200 ? entry.content.substring(0, 200) + '...' : entry.content) : '';
+                const tagsHtml = entry.tags && entry.tags.length > 0 
+                    ? entry.tags.map(tag => `<span style="background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">${tag}</span>`).join('')
+                    : '';
+
+                const moodInfo = [];
+                if (entry.moodBefore) moodInfo.push(`Before: ${entry.moodBefore}/10`);
+                if (entry.moodAfter) moodInfo.push(`After: ${entry.moodAfter}/10`);
+                const moodText = moodInfo.length > 0 ? moodInfo.join(' • ') : '';
+
+                return `
+                    <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 15px; background: #fafafa;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 8px 0; color: #333; font-size: 1.1rem;">${entry.title || 'Untitled'}</h3>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
+                                    ${date.toLocaleString()} ${moodText ? `• ${moodText}` : ''}
+                                </div>
+                                ${tagsHtml ? `<div style="margin-bottom: 10px;">${tagsHtml}</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-left: 16px;">
+                                <button onclick="editJournalEntry(${JSON.stringify(entry).replace(/"/g, '&quot;')})" 
+                                        style="padding: 6px 12px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    Edit
+                                </button>
+                                <button onclick="deleteJournalEntry('${entry.code}')" 
+                                        style="padding: 6px 12px; background: #fee; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div style="color: #555; line-height: 1.6; white-space: pre-wrap;">${preview}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = entriesHtml;
+        }
+
+        async function deleteJournalEntry(entryCode) {
+            if (!confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                await apiClient.deleteJournalEntry(entryCode);
+                console.log('Journal entry deleted successfully');
+                showJournalMessage('Journal entry deleted successfully.', 'success');
+                
+                // Reload journal entries
+                await loadJournalEntries();
+                
+            } catch (error) {
+                console.error('Failed to delete journal entry:', error);
+                showJournalMessage('Failed to delete journal entry. Please try again.', 'error');
+            }
+        }
+
+        function showJournalMessage(message, type = 'info') {
+            // Create or update message element
+            let messageEl = document.getElementById('journalMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'journalMessage';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    opacity: 0;
+                    transform: translateY(-20px);
+                    transition: all 0.3s ease;
+                `;
+                document.body.appendChild(messageEl);
+            }
+
+            // Set message and style based on type
+            messageEl.textContent = message;
+            messageEl.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+
+            // Show message
+            setTimeout(() => {
+                messageEl.style.opacity = '1';
+                messageEl.style.transform = 'translateY(0)';
+            }, 10);
+
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+                messageEl.style.transform = 'translateY(-20px)';
+            }, 3000);
+        }
+    </script>
+
     <script>
         // WebSocket connection (authentication variables are in the first script block)
         let stompClient = null;
@@ -1589,28 +3253,15 @@
         let connectionAttempts = 0;
         const maxRetries = 5;
         
+        // Make connected status globally accessible
+        window.getConnectionStatus = function() {
+            return connected;
+        };
+        
         // Session tracking
         let sessionStartTime = Date.now();
         let messageCount = 0;
-        let currentRole = 'CBT Therapist';
-        let crisisMode = false;
         let lastMessageTime = null; // Track last message timestamp for gap detection
-
-        // Agent roles and responses
-        const agentRoles = {
-            'CBT Therapist': {
-                description: 'Helping you restructure negative thought patterns using evidence-based cognitive behavioral techniques.'
-            },
-            'Mindfulness Coach': {
-                description: 'Guiding you through mindfulness practices and helping you stay present in the moment.'
-            },
-            'Crisis Counselor': {
-                description: 'Providing immediate support and safety planning during crisis situations.'
-            }
-        };
-
-        // Crisis detection keywords
-        const crisisKeywords = ['hurt myself', 'end it all', 'suicide', 'kill myself', 'want to die', 'hopeless', 'can\'t go on'];
         
         // Timestamp utilities - optimized for performance
         const TIME_GAP_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -1689,6 +3340,7 @@
         // Initialize WebSocket connection with STOMP
         function initWebSocket() {
             try {
+                
                 stompClient = new StompJs.Client({
                     brokerURL: API_CONFIG.websocketUrl,
                     connectHeaders: getAuthHeaders(),
@@ -1702,7 +3354,6 @@
                 stompClient.onConnect = function (frame) {
                     console.log('STOMP Connected: ' + frame);
                     connected = true;
-                    updateConnectionStatus(true);
                     connectionAttempts = 0;
                     
                     // Subscribe to user-specific queue
@@ -1725,13 +3376,11 @@
                     console.error('STOMP error: ' + frame.headers['message']);
                     console.error('Details: ' + frame.body);
                     connected = false;
-                    updateConnectionStatus(false);
                 };
 
                 stompClient.onWebSocketClose = function (event) {
                     console.log('WebSocket connection closed');
                     connected = false;
-                    updateConnectionStatus(false);
                     
                     // Attempt to reconnect
                     if (connectionAttempts < maxRetries) {
@@ -1747,27 +3396,11 @@
 
             } catch (error) {
                 console.error('Failed to create STOMP connection:', error);
-                updateConnectionStatus(false);
             }
         }
 
         // Removed old sync getAuthHeaders - now using async version below
 
-        function updateConnectionStatus(connected) {
-            const statusElement = document.getElementById('connectionStatus');
-            const dotElement = document.getElementById('statusDot');
-            const textElement = document.getElementById('connectionText');
-            
-            if (connected) {
-                statusElement.classList.remove('disconnected');
-                dotElement.classList.remove('disconnected');
-                textElement.textContent = 'WebSocket Connected';
-            } else {
-                statusElement.classList.add('disconnected');
-                dotElement.classList.add('disconnected');
-                textElement.textContent = 'Offline Mode';
-            }
-        }
 
         function handleWebSocketMessage(message) {
             console.log('Handling WebSocket message:', message);
@@ -1776,18 +3409,13 @@
             if (message.type === 'chat' || message.content) {
                 // Display the message content
                 const content = message.content || message.message || JSON.stringify(message);
-                const agentRole = message.agentRole || message.agentName || currentRole;
                 const messageTime = message.timestamp ? new Date(message.timestamp).getTime() : Date.now();
-                addMessage(content, false, agentRole, messageTime);
-            } else if (message.type === 'role_switch') {
-                switchAgentRole(message.role);
-            } else if (message.type === 'crisis_alert') {
-                activateCrisisMode();
+                addMessage(content, false, messageTime);
             } else {
                 // Fallback: treat any message as a chat message
                 console.log('Unknown message format, treating as chat:', message);
                 const content = message.content || message.message || message.text || JSON.stringify(message);
-                addMessage(content, false, currentRole, Date.now());
+                addMessage(content, false, Date.now());
             }
         }
 
@@ -1808,58 +3436,7 @@
             return false;
         }
 
-        function updateSessionInfo() {
-            const elapsed = Date.now() - sessionStartTime;
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            document.getElementById('sessionTime').textContent =
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-            document.getElementById('messageCount').textContent = messageCount;
-        }
-
-        function detectCrisis(message) {
-            const lowerMessage = message.toLowerCase();
-            return crisisKeywords.some(keyword => lowerMessage.includes(keyword));
-        }
-
-        function switchAgentRole(newRole) {
-            if (currentRole === newRole) return;
-
-            currentRole = newRole;
-            const roleInfo = agentRoles[newRole];
-
-            document.getElementById('currentRole').textContent = newRole;
-            document.getElementById('roleDescription').textContent = roleInfo.description;
-
-            // Visual feedback for role switch
-            const agentStatus = document.querySelector('.agent-status');
-            agentStatus.style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                agentStatus.style.transform = 'scale(1)';
-            }, 200);
-        }
-
-        function activateCrisisMode() {
-            crisisMode = true;
-            switchAgentRole('Crisis Counselor');
-
-            // Show crisis alert
-            const crisisAlert = document.getElementById('crisisAlert');
-            crisisAlert.classList.add('active');
-
-            // Update crisis monitor
-            const crisisMonitor = document.getElementById('crisisMonitor');
-            crisisMonitor.classList.add('alert');
-            crisisMonitor.innerHTML = `
-                <div class="crisis-status">🚨 Crisis Detected</div>
-                <div style="font-size: 12px;">Emergency protocols active</div>
-            `;
-
-            setTimeout(() => {
-                crisisAlert.classList.remove('active');
-            }, 5000);
-        }
 
         function formatMarkdown(text) {
             try {
@@ -1905,7 +3482,7 @@
             return formatted;
         }
 
-        function addMessage(content, isUser = false, role = null, messageTime = null) {
+        function addMessage(content, isUser = false, messageTime = null) {
             const messagesContainer = document.getElementById('messages');
             if (!messagesContainer) return;
             
@@ -1942,9 +3519,6 @@
 
             if (isUser) {
                 messageCount++;
-                if (typeof updateSessionInfo === 'function') {
-                    updateSessionInfo();
-                }
             }
         }
 
@@ -1967,7 +3541,7 @@
 
             // Add user message with current timestamp
             const userMessageTime = Date.now();
-            addMessage(message, true, null, userMessageTime);
+            addMessage(message, true, userMessageTime);
             
             // Clear input and reset to auto height
             input.value = '';
@@ -1981,7 +3555,7 @@
             if (!sentViaWS) {
                 // Show connection error message instead of automatic response
                 const errorMessage = "Connection unavailable. Please check your internet connection or try again later.";
-                addMessage(errorMessage, false, 'System', userMessageTime + 500);
+                addMessage(errorMessage, false, userMessageTime + 500);
             }
         }
 
