@@ -855,6 +855,14 @@
                             </form>
                         </div>
 
+                        <!-- Mood History -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                            <h3 style="color: #4a90e2; margin-bottom: 20px; font-size: 1.5rem;">Mood History</h3>
+                            <div id="moodHistoryContainer">
+                                <div style="text-align: center; color: #666; padding: 20px;">Loading mood history...</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -936,6 +944,14 @@
                                 <button onclick="loadJournalEntries()" style="padding: 12px 20px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer;">
                                     Clear
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Journal History -->
+                        <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
+                            <h3 style="color: #4a90e2; margin-bottom: 20px; font-size: 1.5rem;">Journal History</h3>
+                            <div id="journalHistoryContainer">
+                                <div style="text-align: center; color: #666; padding: 20px;">Loading journal entries...</div>
                             </div>
                         </div>
 
@@ -3074,7 +3090,7 @@
         }
 
         async function loadJournalEntries() {
-            const container = document.getElementById('journalEntriesContainer');
+            const container = document.getElementById('journalHistoryContainer');
             if (!container) return;
 
             try {
@@ -3100,7 +3116,7 @@
                 return;
             }
 
-            const container = document.getElementById('journalEntriesContainer');
+            const container = document.getElementById('journalHistoryContainer');
             if (!container) return;
 
             try {
@@ -3117,7 +3133,7 @@
         }
 
         function displayJournalEntries(entries) {
-            const container = document.getElementById('journalEntriesContainer');
+            const container = document.getElementById('journalHistoryContainer');
             if (!container) return;
 
             if (entries.length === 0) {
