@@ -20,7 +20,11 @@ public class ChatService {
 
     private final UserProfileService userProfileService;
 
+    private final InputGuardrailService inputGuardrailService;
+
     public String chat(String keycloakUserId, String userMsg) {
+        boolean shouldProcessMessage = inputGuardrailService.shouldProcessMessage(userMsg, keycloakUserId);
+        if (!shouldProcessMessage) return InputGuardrailService.GENERAL_BLOCKED_RESPONSE;
         // routing workflow
         // TODO:load from db config
         // TODO if user doesn't have previous consultation history, rag knowledge base instead, or do not rag, just use base chat

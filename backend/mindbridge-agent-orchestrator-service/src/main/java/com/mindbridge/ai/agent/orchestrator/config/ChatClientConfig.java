@@ -7,7 +7,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,22 +22,13 @@ public class ChatClientConfig {
     // customised chatClient
     @Bean
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
-
-        ChatClient build = chatClientBuilder.defaultAdvisors(
+        return chatClientBuilder.clone().defaultAdvisors(
                 PromptChatMemoryAdvisor.builder(chatMemory).build(),
-//                OrchestratorAdviser.builder().queryTransformers(queryTransformer).queryExpander(queryExpander).build(),
-//                VectorStoreChatMemoryAdvisor.builder(vectorStore).defaultTopK(3).build(),
-                        // TODO RelevancyEvaluator
-                        // TODO SensitiveDataInputGuardrailAdvisor
-//                QuestionAnswerAdvisor.builder(vectorStore).searchRequest().build(),
                         new SimpleLoggerAdvisor())
-                // TODO Function calls, tool call
                 .defaultSystem(systemPromptResource)
+                // TODO Function calls, tool call
 //                .defaultTools(new RagTools(chatClientBuilder.clone(), restClientBuilder, vectorStore))
                 .build();
-
-
-        return build;
     }
 
 
