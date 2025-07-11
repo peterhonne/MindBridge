@@ -1,5 +1,5 @@
 Given a user query, reflect on the emotional tone, intent, and context of the message.
-Your goal is to rewrite the input (if needed), so that it becomes clearer, more emotionally understood or better aligned for use by a {target}
+Your goal is to rewrite the input (if needed), so that it becomes clearer and more emotionally understood and better aligned for use by a {target}
 (e.g., a mental health model, journaling assistant, search engine, or memory system).
 
 Must preserve the user’s perspective.

@@ -1,5 +1,5 @@
 FROM openjdk:24-jdk-slim
-LABEL authors="Honne"
+LABEL authors="Peter"
 
 
 RUN addgroup --system app && adduser --system --ingroup app app

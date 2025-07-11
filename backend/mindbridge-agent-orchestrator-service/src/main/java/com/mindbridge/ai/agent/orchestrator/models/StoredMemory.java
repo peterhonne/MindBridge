@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -17,7 +17,7 @@ public class StoredMemory extends Memory {
 
     private String id;
     private String memoryId = UUID.randomUUID().toString();
-    private Date createdAt = new Date();
+    private LocalDateTime createdAt;
     private String userId;
     private String threadId;
     private MemoryType memoryType; // Optional override

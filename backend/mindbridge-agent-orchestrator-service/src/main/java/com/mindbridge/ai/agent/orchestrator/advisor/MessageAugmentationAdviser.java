@@ -4,6 +4,7 @@ import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.rag.Query;
@@ -29,7 +30,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class OrchestratorAdviser implements BaseAdvisor {
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+
+public class MessageAugmentationAdviser implements BaseAdvisor {
 
     public static final String DOCUMENT_CONTEXT = "rag_document_context";
 
@@ -37,7 +40,7 @@ public class OrchestratorAdviser implements BaseAdvisor {
             This is the user current query:
             %s
             
-            And previous context for your reference:
+            And previous conversation history for your reference:
             %s
             """;
 
@@ -59,11 +62,14 @@ public class OrchestratorAdviser implements BaseAdvisor {
 
     private final int order;
 
-    private OrchestratorAdviser(@Nullable List<QueryTransformer> queryTransformers,
-                                         @Nullable QueryExpander queryExpander, DocumentRetriever documentRetriever,
-                                         @Nullable DocumentJoiner documentJoiner, @Nullable List<DocumentPostProcessor> documentPostProcessors,
-                                         @Nullable QueryAugmenter queryAugmenter, @Nullable TaskExecutor taskExecutor, @Nullable Scheduler scheduler,
-                                         @Nullable Integer order) {
+    private final ChatMemory chatMemory;
+
+    private MessageAugmentationAdviser(@Nullable List<QueryTransformer> queryTransformers,
+                                       @Nullable QueryExpander queryExpander, DocumentRetriever documentRetriever,
+                                       @Nullable DocumentJoiner documentJoiner, @Nullable List<DocumentPostProcessor> documentPostProcessors,
+                                       @Nullable QueryAugmenter queryAugmenter, @Nullable TaskExecutor taskExecutor, @Nullable Scheduler scheduler,
+                                       @Nullable Integer order, ChatMemory chatMemory) {
+        this.chatMemory = chatMemory;
         Assert.notNull(documentRetriever, "documentRetriever cannot be null");
         Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
         this.queryTransformers = queryTransformers != null ? queryTransformers : List.of();
@@ -77,8 +83,8 @@ public class OrchestratorAdviser implements BaseAdvisor {
         this.order = order != null ? order : 0;
     }
 
-    public static OrchestratorAdviser.Builder builder() {
-        return new OrchestratorAdviser.Builder();
+    public static MessageAugmentationAdviser.Builder builder() {
+        return new MessageAugmentationAdviser.Builder();
     }
 
     @Override
@@ -96,7 +102,9 @@ public class OrchestratorAdviser implements BaseAdvisor {
         // 1. Transform original user query based on a chain of query transformers.
         Query transformedQuery = originalQuery;
         for (var queryTransformer : this.queryTransformers) {
-            transformedQuery = queryTransformer.apply(transformedQuery.mutate().text(String.format(CONTEXT_TEMPLATE, chatClientRequest.prompt().getUserMessage().getText(), chatClientRequest.prompt().getSystemMessage().getText())).build());
+            transformedQuery = queryTransformer.apply(transformedQuery.mutate()
+                    .text(String.format(CONTEXT_TEMPLATE, chatClientRequest.prompt().getUserMessage().getText(), chatMemory.get((String) context.get(CONVERSATION_ID))))
+                    .build());
         }
         String transformedQueryStr = transformedQuery.text();
         if (transformedQueryStr.contains("#recall#")) {
@@ -124,7 +132,7 @@ public class OrchestratorAdviser implements BaseAdvisor {
             }
             context.put(DOCUMENT_CONTEXT, documents);
 
-            // 5. Augment user query with the document contextual data.
+            // 6. Augment user query with the document contextual data.
             Query augmentedQuery = this.queryAugmenter.augment(originalQuery, documents);
             String augmentedQueryStr = augmentedQuery.text();
             if (augmentedQueryStr.equals("I don't know")) {
@@ -136,7 +144,6 @@ public class OrchestratorAdviser implements BaseAdvisor {
             newQuery = transformedQueryStr;
         }
 
-        // 6. Update ChatClientRequest with augmented prompt.
         return chatClientRequest.mutate()
                 .prompt(chatClientRequest.prompt().augmentUserMessage(newQuery))
                 .context(context)
@@ -207,74 +214,81 @@ public class OrchestratorAdviser implements BaseAdvisor {
 
         private Integer order;
 
+        private ChatMemory chatMemory;
+
         private Builder() {
         }
 
-        public OrchestratorAdviser.Builder queryTransformers(List<QueryTransformer> queryTransformers) {
+        public MessageAugmentationAdviser.Builder queryTransformers(List<QueryTransformer> queryTransformers) {
             Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
             this.queryTransformers = queryTransformers;
             return this;
         }
 
-        public OrchestratorAdviser.Builder queryTransformers(QueryTransformer... queryTransformers) {
+        public MessageAugmentationAdviser.Builder queryTransformers(QueryTransformer... queryTransformers) {
             Assert.notNull(queryTransformers, "queryTransformers cannot be null");
             Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
             this.queryTransformers = Arrays.asList(queryTransformers);
             return this;
         }
 
-        public OrchestratorAdviser.Builder queryExpander(QueryExpander queryExpander) {
+        public MessageAugmentationAdviser.Builder queryExpander(QueryExpander queryExpander) {
             this.queryExpander = queryExpander;
             return this;
         }
 
-        public OrchestratorAdviser.Builder documentRetriever(DocumentRetriever documentRetriever) {
+        public MessageAugmentationAdviser.Builder documentRetriever(DocumentRetriever documentRetriever) {
             this.documentRetriever = documentRetriever;
             return this;
         }
 
-        public OrchestratorAdviser.Builder documentJoiner(DocumentJoiner documentJoiner) {
+        public MessageAugmentationAdviser.Builder documentJoiner(DocumentJoiner documentJoiner) {
             this.documentJoiner = documentJoiner;
             return this;
         }
 
-        public OrchestratorAdviser.Builder documentPostProcessors(List<DocumentPostProcessor> documentPostProcessors) {
+        public MessageAugmentationAdviser.Builder documentPostProcessors(List<DocumentPostProcessor> documentPostProcessors) {
             Assert.noNullElements(documentPostProcessors, "documentPostProcessors cannot contain null elements");
             this.documentPostProcessors = documentPostProcessors;
             return this;
         }
 
-        public OrchestratorAdviser.Builder documentPostProcessors(DocumentPostProcessor... documentPostProcessors) {
+        public MessageAugmentationAdviser.Builder documentPostProcessors(DocumentPostProcessor... documentPostProcessors) {
             Assert.notNull(documentPostProcessors, "documentPostProcessors cannot be null");
             Assert.noNullElements(documentPostProcessors, "documentPostProcessors cannot contain null elements");
             this.documentPostProcessors = Arrays.asList(documentPostProcessors);
             return this;
         }
 
-        public OrchestratorAdviser.Builder queryAugmenter(QueryAugmenter queryAugmenter) {
+        public MessageAugmentationAdviser.Builder queryAugmenter(QueryAugmenter queryAugmenter) {
             this.queryAugmenter = queryAugmenter;
             return this;
         }
 
-        public OrchestratorAdviser.Builder taskExecutor(TaskExecutor taskExecutor) {
+        public MessageAugmentationAdviser.Builder taskExecutor(TaskExecutor taskExecutor) {
             this.taskExecutor = taskExecutor;
             return this;
         }
 
-        public OrchestratorAdviser.Builder scheduler(Scheduler scheduler) {
+        public MessageAugmentationAdviser.Builder scheduler(Scheduler scheduler) {
             this.scheduler = scheduler;
             return this;
         }
 
-        public OrchestratorAdviser.Builder order(Integer order) {
+        public MessageAugmentationAdviser.Builder order(Integer order) {
             this.order = order;
             return this;
         }
 
-        public OrchestratorAdviser build() {
-            return new OrchestratorAdviser(this.queryTransformers, this.queryExpander, this.documentRetriever,
+        public MessageAugmentationAdviser.Builder chatMemory(ChatMemory chatMemory) {
+            this.chatMemory = chatMemory;
+            return this;
+        }
+
+        public MessageAugmentationAdviser build() {
+            return new MessageAugmentationAdviser(this.queryTransformers, this.queryExpander, this.documentRetriever,
                     this.documentJoiner, this.documentPostProcessors, this.queryAugmenter, this.taskExecutor,
-                    this.scheduler, this.order);
+                    this.scheduler, this.order, this.chatMemory);
         }
 
     }

@@ -1,7 +1,5 @@
 package com.mindbridge.ai.agent.orchestrator.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mindbridge.ai.agent.orchestrator.advisor.RedisChatMemoryRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -24,8 +22,5 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public RedisChatMemoryRepository redisChatMemoryRepository(RedisTemplate<String, String> redisAgentMessageTemplate, ObjectMapper objectMapper) {
-        return new RedisChatMemoryRepository(redisAgentMessageTemplate, objectMapper);
-    }
+
 }

@@ -1,10 +1,9 @@
 package com.mindbridge.ai.agent.orchestrator.orchestrator;
 
-import com.mindbridge.ai.agent.orchestrator.advisor.OrchestratorAdviser;
-import com.mindbridge.ai.agent.orchestrator.advisor.RedisChatMemoryRepository;
+import com.mindbridge.ai.agent.orchestrator.advisor.MessageAugmentationAdviser;
+import com.mindbridge.ai.agent.orchestrator.component.CustomChatMemoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.Message;
@@ -34,8 +33,6 @@ public class AgentOrchestrator {
 
     private final VectorStore vectorStore;
 
-    private final PromptChatMemoryAdvisor promptChatMemoryAdvisor;
-
     private final ChatMemory chatMemory;
 
 //    private final QuestionAnswerAdvisor questionAnswerAdvisor;
@@ -60,14 +57,13 @@ public class AgentOrchestrator {
                     """
     );
 
-    public AgentOrchestrator(ChatClient chatClient, ChatClient.Builder clientBuilder, VectorStore vectorStore, RedisChatMemoryRepository redisChatMemoryRepository, ChatMemory chatMemory) {
+    public AgentOrchestrator(ChatClient chatClient, ChatClient.Builder clientBuilder, VectorStore vectorStore, CustomChatMemoryRepository customChatMemoryRepository, ChatMemory chatMemory) {
         this.chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(redisChatMemoryRepository)
+                .chatMemoryRepository(customChatMemoryRepository)
                 .build();
         this.chatClient = chatClient;
         this.clientBuilder = clientBuilder;
         this.vectorStore = vectorStore;
-        this.promptChatMemoryAdvisor = PromptChatMemoryAdvisor.builder(chatMemory).build();
     }
 
 
@@ -107,8 +103,14 @@ public class AgentOrchestrator {
 
         return chatClient.prompt(supportRoutes.get("therapeutic"))
                 .user(userInput)
-                .advisors(promptChatMemoryAdvisor,
-                        OrchestratorAdviser.builder().queryTransformers(queryTransformer).queryExpander(queryExpander).queryAugmenter(queryAugmenter).documentRetriever(documentRetriever).build())
+                .advisors(
+                        MessageAugmentationAdviser.builder()
+                                .queryTransformers(queryTransformer)
+                                .queryExpander(queryExpander)
+                                .queryAugmenter(queryAugmenter)
+                                .documentRetriever(documentRetriever)
+                                .chatMemory(chatMemory)
+                                .build())
                 .advisors(advisor -> advisor.param(CONVERSATION_ID, keycloakUserId).param(FILTER_EXPRESSION, "user_id == " + userId))
                 .call()
                 .content();
@@ -117,7 +119,7 @@ public class AgentOrchestrator {
     private String handleGeneralSupport(String userInput, String keycloakUserId) {
         return chatClient.prompt(supportRoutes.get("general"))
                 .user(userInput)
-                .advisors(promptChatMemoryAdvisor)
+                .advisors()
                 .advisors(advisor -> advisor.param(CONVERSATION_ID, keycloakUserId))
                 .call()
                 .content();
@@ -126,7 +128,7 @@ public class AgentOrchestrator {
     private String handleEducationalSupport(String userInput, String keycloakUserId) {
         return chatClient.prompt(supportRoutes.get("educational"))
                 .user(userInput)
-                .advisors(promptChatMemoryAdvisor)
+                .advisors()
                 .advisors(advisor -> advisor.param(CONVERSATION_ID, keycloakUserId))
                 .call()
                 .content();
@@ -136,7 +138,8 @@ public class AgentOrchestrator {
     private String classifyInput(String userInput, String keycloakUserId) {
         List<Message> messageList = chatMemory.get(keycloakUserId);
 
-        return chatClient.prompt(messageList + """
+        return clientBuilder.clone().build()
+                .prompt(messageList + """
                         Above is previous chat message history for your reference.
                         --------------
                         Classify the following mental health input into one of these categories:

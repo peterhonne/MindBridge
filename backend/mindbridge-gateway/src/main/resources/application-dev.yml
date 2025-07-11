@@ -23,8 +23,15 @@ spring:
           globalcors:
             cors-configurations:
               '[/**]':
-                allowedOrigins: "http://localhost:63342"
+                allowedOrigins:
+                - "http://localhost:63342"
+                - "http://localhost:3000"
+                - "http://localhost:3001"
                 allowedMethods:
                   - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTION
                 allowedHeaders: "*"
 

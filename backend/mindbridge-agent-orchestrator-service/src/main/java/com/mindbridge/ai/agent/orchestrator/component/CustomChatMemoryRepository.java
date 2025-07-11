@@ -1,9 +1,9 @@
-package com.mindbridge.ai.agent.orchestrator.advisor;
+package com.mindbridge.ai.agent.orchestrator.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mindbridge.ai.agent.orchestrator.models.entity.ChatMessage;
+import com.mindbridge.ai.agent.orchestrator.repository.PgChatMessageRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.content.Media;
@@ -14,19 +14,25 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+@Slf4j
+public final class CustomChatMemoryRepository implements ChatMemoryRepository {
 
-public final class RedisChatMemoryRepository implements ChatMemoryRepository {
-
-    private static final Logger log = LoggerFactory.getLogger(RedisChatMemoryRepository.class);
     private final RedisTemplate<String, String> redisTemplate;
     private static final String KEY_PREFIX = "chat:memory:";
     private final ObjectMapper objectMapper;
+    private final PgChatMessageRepository pgChatMessageRepository;
 
-    public RedisChatMemoryRepository(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper) {
+
+    public CustomChatMemoryRepository(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper, PgChatMessageRepository pgChatMessageRepository) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.pgChatMessageRepository = pgChatMessageRepository;
     }
 
     @Override
@@ -91,6 +97,16 @@ public final class RedisChatMemoryRepository implements ChatMemoryRepository {
         Assert.noNullElements(messages, "messages cannot contain null elements");
 
         if (messages.isEmpty()) return;
+        LocalDateTime localDateTime = LocalDateTime.now();
+        // save to postgres db
+        Message newMessage = messages.getLast();
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setConversationId(conversationId);
+        chatMessage.setContent(newMessage.getText());
+        chatMessage.setMessageType(newMessage.getMessageType());
+        chatMessage.setMetadata(newMessage.getMetadata());
+        chatMessage.setCreatedAt(localDateTime);
+        pgChatMessageRepository.save(chatMessage);
 
         String key = KEY_PREFIX + conversationId;
 
@@ -99,7 +115,7 @@ public final class RedisChatMemoryRepository implements ChatMemoryRepository {
             try {
                 Map<String, Object> metadata = message.getMetadata();
                 if (!metadata.containsKey("createAt")) {
-                    metadata.put("createAt", new Date());
+                    metadata.put("createAt", localDateTime);
                 }
                 String jsonMessage = objectMapper.writeValueAsString(message);
                 jsonMessages.add(jsonMessage);
@@ -123,6 +139,7 @@ public final class RedisChatMemoryRepository implements ChatMemoryRepository {
                 }
             }
         });
+
     }
 
     @Override
@@ -132,31 +149,5 @@ public final class RedisChatMemoryRepository implements ChatMemoryRepository {
         redisTemplate.delete(key);
     }
 
-    public void saveMessage(String conversationId, Message message) {
-        if (ObjectUtils.isEmpty(message) || message.getText().isBlank()) return;
-
-        String key = KEY_PREFIX + conversationId;
-        List<String> jsonMessages = new ArrayList<>();
-        try {
-            jsonMessages.add(objectMapper.writeValueAsString(message));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error serializing message: " + e.getMessage(), e);
-        }
-
-        redisTemplate.execute(new SessionCallback<List<Object>>() {
-            public List<Object> execute(RedisOperations operations) throws DataAccessException {
-                try {
-                    operations.multi();
-                    redisTemplate.opsForList().rightPushAll(key, jsonMessages);
-                    operations.exec();
-                    return null;
-                } catch (RuntimeException e) {
-                    operations.discard();
-                    throw e;
-                }
-            }
-        });
-
-    }
 
 }

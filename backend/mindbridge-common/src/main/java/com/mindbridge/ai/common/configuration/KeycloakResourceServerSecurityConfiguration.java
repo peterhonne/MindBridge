@@ -32,7 +32,7 @@ public class KeycloakResourceServerSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers("/actuator/**","/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**", "/mindbridge/**").permitAll()
+                        authorize.requestMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**", "/mindbridge/**").permitAll()
                                 .anyRequest().authenticated())
                 .csrf(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2-> oauth2.jwt(Customizer.withDefaults()));

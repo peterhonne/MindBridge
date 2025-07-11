@@ -1,6 +1,6 @@
 package com.mindbridge.ai.agent.orchestrator.controller;
 
-import com.mindbridge.ai.agent.orchestrator.models.dto.ChatMessage;
+import com.mindbridge.ai.agent.orchestrator.models.dto.ChatMessageDto;
 import com.mindbridge.ai.agent.orchestrator.service.ChatHistoryService;
 import com.mindbridge.ai.common.annotation.SysLog;
 import com.mindbridge.ai.common.utils.SecurityUtils;
@@ -22,7 +22,7 @@ public class ChatHistoryController {
 
     @SysLog("Get chat message histories")
     @GetMapping
-    public ResponseEntity<List<ChatMessage>> getChatHistory() {
+    public ResponseEntity<List<ChatMessageDto>> getChatHistory() {
         return ResponseEntity.ok(chatHistoryService.getChatHistory(SecurityUtils.getKeycloakUserId()));
     }
 
