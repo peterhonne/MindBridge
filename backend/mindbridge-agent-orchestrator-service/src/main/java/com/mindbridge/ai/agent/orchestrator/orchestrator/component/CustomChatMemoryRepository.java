@@ -1,4 +1,4 @@
-package com.mindbridge.ai.agent.orchestrator.component;
+package com.mindbridge.ai.agent.orchestrator.orchestrator.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mindbridge.ai.agent.orchestrator.models.entity.ChatMessage;

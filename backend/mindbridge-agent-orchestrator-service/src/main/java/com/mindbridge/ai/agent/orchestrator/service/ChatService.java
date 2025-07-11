@@ -12,11 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final ChatClient chatClient;
-
     private final AgentOrchestrator agentOrchestrator;
-
-    private final ChatClient.Builder clientBuilder;
 
     private final UserProfileService userProfileService;
 

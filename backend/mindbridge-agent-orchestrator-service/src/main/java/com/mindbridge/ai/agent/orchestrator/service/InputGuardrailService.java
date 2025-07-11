@@ -1,18 +1,22 @@
 package com.mindbridge.ai.agent.orchestrator.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InputGuardrailService {
 
-    public final ChatClient.Builder chatClientBuilder;
+    private final ChatClient.Builder chatClientBuilder;
 
-    public InputGuardrailService(ChatClient.Builder chatClientBuilder) {
-        this.chatClientBuilder = chatClientBuilder;
-    }
+    private final ChatMemory chatMemory;
 
     public static final String GENERAL_BLOCKED_RESPONSE = """
             I'm sorry, but I can't continue with that message.
@@ -23,8 +27,11 @@ public class InputGuardrailService {
             """;
 
     public boolean shouldProcessMessage(String input, String keycloakUserId) {
+        List<Message> messageList = chatMemory.get(keycloakUserId);
         InputGuardrailResult inputGuardrailResult = chatClientBuilder.clone().build().prompt()
-                .system("""
+                .system(messageList + """
+                        Above is previous chat message history for your reference.
+                        --------
                         You are a safety and compliance advisor for a mental health support chatbot.
                         Your task is to evaluate a user's input and determine whether it is appropriate to be processed by an AI assistant.
                         
@@ -35,6 +42,8 @@ public class InputGuardrailService {
                         4. Hate speech, abuse, or language that targets individuals or groups.
                         5. Inappropriate, sexual, or manipulative content.
                         6. Any content that may violate data privacy laws (e.g., GDPR, HIPAA).
+                        
+                        Mention which risk you concern, and explain.
                         """)
                 .user(input)
                 .call()

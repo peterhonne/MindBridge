@@ -1,4 +1,4 @@
-package com.mindbridge.ai.agent.orchestrator.advisor;
+package com.mindbridge.ai.agent.orchestrator.orchestrator.advisor;
 
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;

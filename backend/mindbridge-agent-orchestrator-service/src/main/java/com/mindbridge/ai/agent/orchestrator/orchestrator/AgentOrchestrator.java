@@ -1,8 +1,9 @@
 package com.mindbridge.ai.agent.orchestrator.orchestrator;
 
-import com.mindbridge.ai.agent.orchestrator.advisor.MessageAugmentationAdviser;
-import com.mindbridge.ai.agent.orchestrator.component.CustomChatMemoryRepository;
+import com.mindbridge.ai.agent.orchestrator.orchestrator.advisor.MessageAugmentationAdviser;
+import com.mindbridge.ai.agent.orchestrator.orchestrator.component.CustomChatMemoryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -34,8 +35,6 @@ public class AgentOrchestrator {
     private final VectorStore vectorStore;
 
     private final ChatMemory chatMemory;
-
-//    private final QuestionAnswerAdvisor questionAnswerAdvisor;
 
     @Value("classpath:/prompts/query_augmenter_prompt.st")
     private Resource queryAugmenterPrompt;
@@ -92,13 +91,13 @@ public class AgentOrchestrator {
                 .build();
 
         var queryAugmenter = ContextualQueryAugmenter.builder()
-                .emptyContextPromptTemplate(PromptTemplate.builder()
+                .promptTemplate(PromptTemplate.builder()
                         .resource(queryAugmenterPrompt).build()).build();
 
         var documentRetriever = VectorStoreDocumentRetriever.builder()
                 .vectorStore(vectorStore)
                 .similarityThreshold(0.50)
-                .topK(3)
+                .topK(RandomUtils.secure().randomInt(3, 5))
                 .build();
 
         return chatClient.prompt(supportRoutes.get("therapeutic"))

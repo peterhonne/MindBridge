@@ -1,7 +1,7 @@
 package com.mindbridge.ai.agent.orchestrator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mindbridge.ai.agent.orchestrator.component.CustomChatMemoryRepository;
+import com.mindbridge.ai.agent.orchestrator.orchestrator.component.CustomChatMemoryRepository;
 import com.mindbridge.ai.agent.orchestrator.repository.PgChatMessageRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
