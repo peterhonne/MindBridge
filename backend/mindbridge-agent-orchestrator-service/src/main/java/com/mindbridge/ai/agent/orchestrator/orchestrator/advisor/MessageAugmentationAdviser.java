@@ -5,6 +5,8 @@ import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.rag.Query;
@@ -91,61 +93,52 @@ public class MessageAugmentationAdviser implements BaseAdvisor {
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
         Map<String, Object> context = new HashMap<>(chatClientRequest.context());
 
-        String newQuery = "";
-
         Query originalQuery = Query.builder()
                 .text(chatClientRequest.prompt().getUserMessage().getText())
                 .history(chatClientRequest.prompt().getInstructions())
                 .context(context)
                 .build();
 
+        List<Message> messageList = chatMemory.get((String) context.get(CONVERSATION_ID));
+        String memory = messageList.stream()
+                .filter(m -> m.getMessageType() == MessageType.USER || m.getMessageType() == MessageType.ASSISTANT)
+                .map(m -> m.getMessageType() + ":" + m.getText())
+                .collect(Collectors.joining(System.lineSeparator()));
         // 1. Transform original user query based on a chain of query transformers.
         Query transformedQuery = originalQuery;
         for (var queryTransformer : this.queryTransformers) {
             transformedQuery = queryTransformer.apply(transformedQuery.mutate()
-                    .text(String.format(CONTEXT_TEMPLATE, chatClientRequest.prompt().getUserMessage().getText(), chatMemory.get((String) context.get(CONVERSATION_ID))))
+                    .text(String.format(CONTEXT_TEMPLATE, chatClientRequest.prompt().getUserMessage().getText(), memory))
                     .build());
         }
-        String transformedQueryStr = transformedQuery.text();
-        if (transformedQueryStr.contains("#recall#")) {
-            transformedQueryStr = transformedQueryStr.replace("#recall#", "");
-            transformedQuery = transformedQuery.mutate().text(transformedQueryStr).build();
-            // 2. Expand query into one or multiple queries.
-            List<Query> expandedQueries = this.queryExpander != null ? this.queryExpander.expand(transformedQuery)
-                    : List.of(transformedQuery);
 
-            // 3. Get similar documents for each query.
-            Map<Query, List<List<Document>>> documentsForQuery = expandedQueries.stream()
-                    .map(query -> CompletableFuture.supplyAsync(() -> getDocumentsForQuery(query), this.taskExecutor))
-                    .toList()
-                    .stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> List.of(entry.getValue())));
+        // 2. Expand query into one or multiple queries.
+        List<Query> expandedQueries = this.queryExpander != null ? this.queryExpander.expand(transformedQuery)
+                : List.of(transformedQuery);
 
-            // 4. Combine documents retrieved based on multiple queries and from multiple data
-            // sources.
-            List<Document> documents = this.documentJoiner.join(documentsForQuery);
+        // 3. Get similar documents for each query.
+        Map<Query, List<List<Document>>> documentsForQuery = expandedQueries.stream()
+                .map(query -> CompletableFuture.supplyAsync(() -> getDocumentsForQuery(query), this.taskExecutor))
+                .toList()
+                .stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> List.of(entry.getValue())));
 
-            // 5. Post-process the documents.
-            for (var documentPostProcessor : this.documentPostProcessors) {
-                documents = documentPostProcessor.process(originalQuery, documents);
-            }
-            context.put(DOCUMENT_CONTEXT, documents);
+        // 4. Combine documents retrieved based on multiple queries and from multiple data
+        // sources.
+        List<Document> documents = this.documentJoiner.join(documentsForQuery);
 
-            // 6. Augment user query with the document contextual data.
-            Query augmentedQuery = this.queryAugmenter.augment(originalQuery, documents);
-            String augmentedQueryStr = augmentedQuery.text();
-            if (augmentedQueryStr.equals("I don't know")) {
-                newQuery = transformedQueryStr;
-            } else {
-                newQuery = augmentedQueryStr;
-            }
-        } else {
-            newQuery = transformedQueryStr;
+        // 5. Post-process the documents.
+        for (var documentPostProcessor : this.documentPostProcessors) {
+            documents = documentPostProcessor.process(transformedQuery, documents);
         }
+        context.put(DOCUMENT_CONTEXT, documents);
+
+        // 6. Augment user query with the document contextual data.
+        Query augmentedQuery = this.queryAugmenter.augment(transformedQuery, documents);
 
         return chatClientRequest.mutate()
-                .prompt(chatClientRequest.prompt().augmentUserMessage(newQuery))
+                .prompt(chatClientRequest.prompt().augmentUserMessage(augmentedQuery.text()))
                 .context(context)
                 .build();
     }
