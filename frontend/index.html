@@ -1132,10 +1132,21 @@
                         localStorage.setItem('token', tokenResponse.access_token);
                         localStorage.setItem('refreshToken', tokenResponse.refresh_token);
                         
-                        // Clean URL and show main app
+                        // Clean URL
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        showMainApp();
-                        return true;
+                        
+                        // Validate token with server before showing app
+                        const tokenValid = await validateTokenWithServer(tokenResponse.access_token);
+                        if (tokenValid) {
+                            showMainApp();
+                            return true;
+                        } else {
+                            // Token invalid, clear and show login
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('refreshToken');
+                            showLoginFallback();
+                            return false;
+                        }
                     } else {
                         const error = await response.json();
                         console.error('Token exchange failed:', error);
@@ -1243,9 +1254,13 @@
                     try {
                         const newToken = await refreshWithStoredToken(refreshToken);
                         if (newToken) {
-                            initializationCompleted = true;
-                            showMainApp();
-                            return true;
+                            // Validate new token with server before showing app
+                            const tokenValid = await validateTokenWithServer(newToken);
+                            if (tokenValid) {
+                                initializationCompleted = true;
+                                showMainApp();
+                                return true;
+                            }
                         }
                     } catch (refreshError) {
                         // Clear invalid refresh token
@@ -1257,39 +1272,50 @@
                     }
                 }
                 
-                // If we have an access token, validate it
+                // If we have an access token, validate it with the server
                 if (token) {
-                    // Decode JWT to check if it's expired
+                    // First check JWT expiry locally to avoid unnecessary server calls
                     const payload = decodeJWT(token);
                     const now = Math.floor(Date.now() / 1000);
                     
-                    
                     if (payload.exp && payload.exp > now) {
-                        initializationCompleted = true;
-                        showMainApp();
-                        return true;
-                    } else {
-                        
-                        // Try to refresh using refresh token
-                        if (refreshToken) {
-                            try {
-                                const newToken = await refreshWithStoredToken(refreshToken);
-                                if (newToken) {
+                        // Token appears valid locally, now verify with server
+                        try {
+                            const serverValidation = await validateTokenWithServer(token);
+                            if (serverValidation) {
+                                initializationCompleted = true;
+                                showMainApp();
+                                return true;
+                            }
+                        } catch (serverError) {
+                            // Server validation failed, continue to refresh logic
+                        }
+                    }
+                    
+                    // Token is expired locally OR server validation failed
+                    // Try to refresh using refresh token
+                    if (refreshToken) {
+                        try {
+                            const newToken = await refreshWithStoredToken(refreshToken);
+                            if (newToken) {
+                                // Validate the new token with server before showing app
+                                const newTokenValid = await validateTokenWithServer(newToken);
+                                if (newTokenValid) {
                                     initializationCompleted = true;
                                     showMainApp();
                                     return true;
                                 }
-                            } catch (refreshError) {
                             }
+                        } catch (refreshError) {
                         }
-                        
-                        // If refresh fails or no refresh token, clear everything
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('refreshToken');
-                        initializationCompleted = true;
-                        showLoginFallback();
-                        return false;
                     }
+                    
+                    // If refresh fails or no refresh token, clear everything
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    initializationCompleted = true;
+                    showLoginFallback();
+                    return false;
                 }
                 
                 // If no tokens at all, return false
@@ -1300,6 +1326,25 @@
                 localStorage.removeItem('refreshToken');
                 initializationCompleted = true;
                 showLoginFallback();
+                return false;
+            }
+        }
+
+        // Helper function to validate token with server
+        async function validateTokenWithServer(token) {
+            try {
+                // Make a lightweight API call to verify token
+                const response = await fetch(`${API_CONFIG.backendUrl}/v1/users/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                return response.ok; // Returns true if token is valid (status 200-299)
+            } catch (error) {
+                console.log('Token validation failed:', error);
                 return false;
             }
         }
@@ -1433,9 +1478,23 @@
                             localStorage.setItem('refreshToken', keycloakInstance.refreshToken);
                         }
                         
-                        initializationInProgress = false;
-                        initializationCompleted = true;
-                        showMainApp();
+                        // Validate token with server before showing app
+                        validateTokenWithServer(keycloakInstance.token).then(tokenValid => {
+                            initializationInProgress = false;
+                            initializationCompleted = true;
+                            if (tokenValid) {
+                                showMainApp();
+                            } else {
+                                // Token invalid, clear and show login
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('refreshToken');
+                                showLoginFallback();
+                            }
+                        }).catch(error => {
+                            initializationInProgress = false;
+                            initializationCompleted = true;
+                            showLoginFallback();
+                        });
                     } else {
                         initializationInProgress = false;
                         initializationCompleted = true;
