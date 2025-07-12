@@ -367,9 +367,9 @@
             overflow: hidden;
         }
 
-        /* Fix markdown content overflow */
+        /* Enhanced markdown content styling */
         .message-content ul, .message-content ol {
-            margin: 0;
+            margin: 8px 0;
             padding-left: 20px;
             max-width: 100%;
             overflow-wrap: break-word;
@@ -379,21 +379,66 @@
             margin: 4px 0;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            line-height: 1.5;
         }
 
         .message-content p {
-            margin: 0 0 8px 0;
+            margin: 8px 0;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            line-height: 1.5;
         }
 
         .message-content p:last-child {
             margin-bottom: 0;
         }
 
+        .message-content p:first-child {
+            margin-top: 0;
+        }
+
         .message-content strong, .message-content em {
             word-wrap: break-word;
             overflow-wrap: break-word;
+        }
+
+        .message-content h1, .message-content h2, .message-content h3, .message-content h4, .message-content h5, .message-content h6 {
+            margin: 16px 0 8px 0;
+            font-weight: 600;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content a {
+            color: #007AFF;
+            text-decoration: underline;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message.agent .message-content a {
+            color: #007AFF;
+        }
+
+        .message.user .message-content a {
+            color: #B3D4FF;
+        }
+
+        .message-content a:hover {
+            opacity: 0.8;
+        }
+
+        .message-content ul ul {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        .message-content li:last-child {
+            margin-bottom: 0;
         }
 
         .message.user .message-content {
@@ -2228,13 +2273,28 @@
             updateDashboardDisplay();
         }
 
+        // Helper function to check if a date is today
+        function isToday(date) {
+            const today = new Date();
+            const checkDate = new Date(date);
+            return checkDate.getDate() === today.getDate() &&
+                   checkDate.getMonth() === today.getMonth() &&
+                   checkDate.getFullYear() === today.getFullYear();
+        }
+
         async function loadDashboardData() {
             try {
                 // Load recent mood entries (last 30 for analysis)
                 const moodHistory = await apiClient.getMoodHistory(0, 30);
                 dashboardData.recentMoodEntries = moodHistory.content || [];
+                
+                // Find today's mood entry specifically
+                dashboardData.recentMood = null;
                 if (dashboardData.recentMoodEntries.length > 0) {
-                    dashboardData.recentMood = dashboardData.recentMoodEntries[0];
+                    const todaysMood = dashboardData.recentMoodEntries.find(entry => isToday(entry.createdAt));
+                    if (todaysMood) {
+                        dashboardData.recentMood = todaysMood;
+                    }
                 }
 
                 // Load recent journal entries
@@ -3369,27 +3429,41 @@
 
         function formatMarkdown(text) {
             try {
+                // First handle escaped newlines and clean up the text
+                let cleanedText = text
+                    .replace(/\\n/g, '\n')  // Convert \n to actual newlines
+                    .replace(/\\\"/g, '"')  // Convert \" to actual quotes
+                    .trim();
+                
                 // Use the marked library for proper markdown parsing
                 if (typeof marked !== 'undefined') {
-                    // Configure marked for inline parsing
+                    // Configure marked for better rendering
                     marked.setOptions({
                         breaks: true,
-                        gfm: true
+                        gfm: true,
+                        sanitize: false,
+                        headerIds: false,
+                        mangle: false
                     });
-                    return marked.parse(text);
+                    return marked.parse(cleanedText);
                 } else {
-                    // Fallback to simple formatting if marked isn't available
-                    return simpleMarkdownFormat(text);
+                    // Fallback to enhanced formatting if marked isn't available
+                    return enhancedMarkdownFormat(cleanedText);
                 }
             } catch (error) {
                 console.error('Error formatting markdown:', error);
-                return simpleMarkdownFormat(text);
+                return enhancedMarkdownFormat(text);
             }
         }
 
-        function simpleMarkdownFormat(text) {
-            // Simple fallback formatting
+        function enhancedMarkdownFormat(text) {
+            // Enhanced markdown formatting with better support
             let formatted = text;
+            
+            // Convert headers (# ## ###)
+            formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^# (.+)$/gm, '<h1>$1</h1>');
             
             // Convert **bold**
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -3397,18 +3471,107 @@
             // Convert *italic*
             formatted = formatted.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
             
-            // Convert bullet points
-            formatted = formatted.replace(/^\* (.+)$/gm, '• $1');
+            // Convert links [text](url)
+            formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
             
-            // Convert line breaks
-            formatted = formatted.replace(/\n/g, '<br>');
+            // Convert bullet points and nested lists
+            const lines = formatted.split('\n');
+            let inList = false;
+            let listLevel = 0;
+            let result = [];
             
-            // Wrap in paragraph if needed
-            if (!formatted.includes('<p>') && !formatted.includes('<ul>')) {
-                formatted = '<p>' + formatted + '</p>';
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const bulletMatch = line.match(/^(\s*)\* (.+)$/);
+                
+                if (bulletMatch) {
+                    const indent = bulletMatch[1].length;
+                    const content = bulletMatch[2];
+                    
+                    if (!inList) {
+                        result.push('<ul>');
+                        inList = true;
+                        listLevel = indent;
+                    } else if (indent > listLevel) {
+                        result.push('<ul>');
+                        listLevel = indent;
+                    } else if (indent < listLevel) {
+                        result.push('</ul>');
+                        listLevel = indent;
+                    }
+                    
+                    result.push(`<li>${content}</li>`);
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                        listLevel = 0;
+                    }
+                    
+                    // Handle paragraphs
+                    if (line.trim() === '') {
+                        result.push('<br>');
+                    } else {
+                        result.push(line);
+                    }
+                }
             }
             
+            // Close any remaining list
+            if (inList) {
+                result.push('</ul>');
+            }
+            
+            formatted = result.join('\n');
+            
+            // Convert line breaks to proper HTML
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            // Remove extra breaks around block elements
+            formatted = formatted.replace(/<br><ul>/g, '<ul>');
+            formatted = formatted.replace(/<\/ul><br>/g, '</ul>');
+            formatted = formatted.replace(/<br><h([1-6])>/g, '<h$1>');
+            formatted = formatted.replace(/<\/h([1-6])><br>/g, '</h$1>');
+            
             return formatted;
+        }
+
+        // Debug function to test markdown rendering
+        function testMarkdown() {
+            const testContent = `# Test Markdown
+
+This is a test of **bold text** and *italic text*.
+
+## List Example
+* First item
+* Second item with **bold**
+* Third item with [link](https://example.com)
+
+### Nested List
+* Main item
+  * Sub item 1
+  * Sub item 2
+* Another main item
+
+Visit [Google](https://google.com) for more info.`;
+            
+            console.log('Testing markdown rendering...');
+            console.log('Original:', testContent);
+            console.log('Formatted:', formatMarkdown(testContent));
+            
+            // Add test message
+            addMessage(testContent, false, Date.now());
+        }
+
+        // Test with CBT content (the problematic content)
+        function testCBTContent() {
+            const cbtContent = "Okay, here are some articles about Cognitive Behavioral Therapy (CBT), categorized for easier browsing. I've included a mix of introductory pieces, articles focusing on specific applications, and some from reputable sources.\\n\\nI. Introductory & Overview Articles:\\n\\n* American Psychological Association (APA): Cognitive Behavioral Therapy:\\n * Link: https://www.apa.org/ptsd-guideline/patients-and-families/cognitive-behavioral\\n * Summary: A good overview of CBT, its principles, and how it works. Explains the focus on thoughts, feelings, and behaviors, and how CBT helps individuals identify and change negative patterns.\\n\\n* Mayo Clinic: Cognitive behavioral therapy (CBT):\\n * Link: https://www.mayoclinic.org/tests-procedures/cognitive-behavioral-therapy/about/pac-20384610\\n * Summary: Provides a clear and concise explanation of CBT, including what to expect during therapy sessions, and conditions it can treat.";
+            
+            console.log('Testing CBT content...');
+            console.log('Formatted:', formatMarkdown(cbtContent));
+            
+            // Add test message
+            addMessage(cbtContent, false, Date.now());
         }
 
         function addMessage(content, isUser = false, messageTime = null) {
