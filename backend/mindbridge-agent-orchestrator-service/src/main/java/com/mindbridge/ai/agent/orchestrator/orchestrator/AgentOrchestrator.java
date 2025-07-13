@@ -14,6 +14,7 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpander;
+import org.springframework.ai.rag.preretrieval.query.transformation.CompressionQueryTransformer;
 import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -75,8 +76,14 @@ public class AgentOrchestrator {
         var queryAugmenter = ContextualQueryAugmenter.builder()
                 .promptTemplate(PromptTemplate.builder()
                         .resource(queryAugmenterPrompt).build()).build();
+
+        var queryCompression = CompressionQueryTransformer.builder()
+                .chatClientBuilder(clientBuilder.clone())
+                .build();
+
         this.messageAugmentationAdviserBuilder = MessageAugmentationAdviser.builder()
                 .queryExpander(queryExpander)
+                .queryTransformers(queryCompression)
                 .queryAugmenter(queryAugmenter)
                 .chatMemory(chatMemory);
     }
@@ -92,7 +99,7 @@ public class AgentOrchestrator {
     }
 
 
-    public String routeUserInput(String userInput, Long userId, String keycloakUserId) {
+    public String routeUserInputAndRespond(String userInput, Long userId, String keycloakUserId) {
         log.debug("Routing user input for appropriate support level - user: {}", userId);
 
         String classification = classifyInput(userInput, keycloakUserId);
@@ -114,16 +121,17 @@ public class AgentOrchestrator {
                 .build();
 
         var queryTransformer = RewriteQueryTransformer.builder()
-                .chatClientBuilder(clientBuilder)
+                .chatClientBuilder(clientBuilder.clone())
                 .promptTemplate(PromptTemplate.builder().resource(queryRewriteTransformerPrompt).build())
                 .targetSearchSystem("vector store")
                 .build();
 
-        return chatClient.prompt(supportRoutes.get("therapeutic"))
+        return chatClient
+                .prompt()
                 .user(userInput)
                 .advisors(messageAugmentationAdviserBuilder
                         .documentRetriever(documentRetriever)
-                        .queryTransformers(queryTransformer)
+                        .addQueryTransformer(queryTransformer)
                         .build())
                 .advisors(advisor -> advisor.param(CONVERSATION_ID, keycloakUserId).param(FILTER_EXPRESSION, "user_id == " + userId))
                 .call()
@@ -149,11 +157,12 @@ public class AgentOrchestrator {
                 .targetSearchSystem("search engine")
                 .build();
 
-        return chatClient.prompt(supportRoutes.get("educational"))
+        return chatClient
+                .prompt()
                 .user(userInput)
                 .advisors(messageAugmentationAdviserBuilder
                         .documentRetriever(documentRetriever)
-                        .queryTransformers(queryTransformer)
+                        .addQueryTransformer(queryTransformer)
                         .build())
                 .advisors(advisor -> advisor.param(CONVERSATION_ID, keycloakUserId))
                 .call()
@@ -168,7 +177,8 @@ public class AgentOrchestrator {
                 .map(m -> m.getMessageType() + ":" + m.getText())
                 .collect(Collectors.joining(System.lineSeparator()));
         return clientBuilder.clone().build()
-                .prompt(memory + """
+                .prompt()
+                .system(memory + """
                         
                         Above is previous chat message history for your reference.
                         --------------
@@ -183,5 +193,6 @@ public class AgentOrchestrator {
                 .call()
                 .content();
     }
+
 
 }

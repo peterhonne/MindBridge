@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +82,21 @@ public class JournalService {
         }
 
         return mapToDto(journalEntry);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JournalEntry> getJournalEntriesByPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+        // Default to last 7 days if no dates provided
+        if (startDate == null) {
+            startDate = LocalDate.now().minusDays(7);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
+        return journalEntryRepository.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, start, end);
     }
 
 

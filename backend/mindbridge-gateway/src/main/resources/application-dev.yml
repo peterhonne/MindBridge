@@ -32,6 +32,6 @@ spring:
                   - POST
                   - PUT
                   - DELETE
-                  - OPTION
+                  - OPTIONS
                 allowedHeaders: "*"
 

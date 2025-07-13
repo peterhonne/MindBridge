@@ -14,5 +14,4 @@ public class MoodStatsDto {
     private Integer lowestMoodScore;
     private List<String> commonMoodTags;
     private Map<String, Integer> moodTrendData; // Date -> Mood Score
-    private String period; // "week", "month", etc.
 }

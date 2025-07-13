@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mindbridge.ai.agent.orchestrator.orchestrator.component.CustomChatMemoryRepository;
 import com.mindbridge.ai.agent.orchestrator.repository.PgChatMessageRepository;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,15 +19,13 @@ public class ChatClientConfig {
     @Value("classpath:/prompts/system.st")
     private Resource systemPromptResource;
 
-    // customised chatClient
     @Bean
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
         return chatClientBuilder.clone().defaultAdvisors(
-                PromptChatMemoryAdvisor.builder(chatMemory).build(),
+                MessageChatMemoryAdvisor.builder(chatMemory).build(),
                         new SimpleLoggerAdvisor())
                 .defaultSystem(systemPromptResource)
                 // TODO Function calls, tool call
-//                .defaultTools(new RagTools(chatClientBuilder.clone(), restClientBuilder, vectorStore))
                 .build();
     }
 

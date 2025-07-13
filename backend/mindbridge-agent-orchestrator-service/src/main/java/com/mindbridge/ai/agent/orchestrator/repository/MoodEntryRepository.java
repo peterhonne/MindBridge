@@ -28,7 +28,14 @@ public interface MoodEntryRepository extends JpaRepository<MoodEntry, Long> {
                                @Param("start") LocalDateTime start,
                                @Param("end") LocalDateTime end);
 
-    long countByUserId(Long userId);
+    @Query(value = """
+            SELECT tag
+            FROM mood_entries, unnest(mood_tags) AS tag
+            WHERE user_id = :userId
+            GROUP BY tag
+            ORDER BY COUNT(*) DESC
+            """, nativeQuery = true)
+    List<String> findMostCommonMoodTags(@Param("userId") Long userId);
 
     Optional<MoodEntry> findByCode(String code);
 }

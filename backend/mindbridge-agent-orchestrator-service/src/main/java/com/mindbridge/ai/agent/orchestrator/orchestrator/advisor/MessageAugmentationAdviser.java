@@ -1,5 +1,6 @@
 package com.mindbridge.ai.agent.orchestrator.orchestrator.advisor;
 
+import com.google.common.collect.Lists;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
@@ -25,10 +26,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.Assert;
 import reactor.core.scheduler.Scheduler;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -107,9 +105,7 @@ public class MessageAugmentationAdviser implements BaseAdvisor {
         // 1. Transform original user query based on a chain of query transformers.
         Query transformedQuery = originalQuery;
         for (var queryTransformer : this.queryTransformers) {
-            transformedQuery = queryTransformer.apply(transformedQuery.mutate()
-                    .text(String.format(CONTEXT_TEMPLATE, chatClientRequest.prompt().getUserMessage().getText(), memory))
-                    .build());
+            transformedQuery = queryTransformer.apply(transformedQuery);
         }
 
         // 2. Expand query into one or multiple queries.
@@ -189,7 +185,7 @@ public class MessageAugmentationAdviser implements BaseAdvisor {
 
     public static final class Builder {
 
-        private List<QueryTransformer> queryTransformers;
+        private ArrayList<QueryTransformer> queryTransformers;
 
         private QueryExpander queryExpander;
 
@@ -212,16 +208,17 @@ public class MessageAugmentationAdviser implements BaseAdvisor {
         private Builder() {
         }
 
-        public MessageAugmentationAdviser.Builder queryTransformers(List<QueryTransformer> queryTransformers) {
-            Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
-            this.queryTransformers = queryTransformers;
-            return this;
-        }
-
         public MessageAugmentationAdviser.Builder queryTransformers(QueryTransformer... queryTransformers) {
             Assert.notNull(queryTransformers, "queryTransformers cannot be null");
             Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
-            this.queryTransformers = Arrays.asList(queryTransformers);
+            this.queryTransformers = Lists.newArrayList(queryTransformers);
+            return this;
+        }
+
+        public MessageAugmentationAdviser.Builder addQueryTransformer(QueryTransformer queryTransformer) {
+            Assert.notNull(queryTransformers, "queryTransformers cannot be null");
+            Assert.noNullElements(queryTransformers, "queryTransformers cannot contain null elements");
+            this.queryTransformers.add(queryTransformer);
             return this;
         }
 

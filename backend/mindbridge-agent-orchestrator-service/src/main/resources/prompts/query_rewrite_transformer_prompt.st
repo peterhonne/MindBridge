@@ -5,7 +5,6 @@ Your goal is to rewrite the input (if needed), so that it becomes clearer and mo
 Must preserve the user’s perspective.
 Remove any irrelevant information, and ensure the query is concise and specific.
 
-Original query:
 {query}
 
 Rewritten query:

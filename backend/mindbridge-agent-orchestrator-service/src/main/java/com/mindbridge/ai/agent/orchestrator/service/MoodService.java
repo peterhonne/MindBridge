@@ -72,26 +72,18 @@ public class MoodService {
     }
 
     @Transactional(readOnly = true)
-    public MoodStatsDto getMoodStats(String userId, LocalDate startDate, LocalDate endDate) {
-        log.debug("Getting mood stats for user: {} from {} to {}", userId, startDate, endDate);
-
-        // Default to last 30 days if no dates provided
+    public MoodStatsDto getMoodStats(String keycloakUserId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Getting mood stats for user: {} from {} to {}", keycloakUserId, startDate, endDate);
         if (startDate == null) {
-            startDate = LocalDate.now().minusDays(30);
+            startDate = LocalDate.now().minusDays(7);
         }
         if (endDate == null) {
             endDate = LocalDate.now();
         }
 
-        LocalDateTime start = startDate.atStartOfDay();
-        LocalDateTime end = endDate.atTime(23, 59, 59);
-
-        User user = userRepository.findByKeycloakUserId(userId)
-                .orElseThrow(() -> new UserProfileNotFoundException(userId));
-
-        // Get mood entries in the date range
-        List<MoodEntry> moodEntries = moodEntryRepository
-                .findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(user.getId(), start, end);
+        User user = userRepository.findByKeycloakUserId(keycloakUserId)
+                .orElseThrow(() -> new UserProfileNotFoundException(keycloakUserId));
+        List<MoodEntry> moodEntries = getRecentMoodsByPeriod(user.getId(), startDate, endDate);
 
         if (moodEntries.isEmpty()) {
             return MoodStatsDto.builder()
@@ -100,7 +92,6 @@ public class MoodService {
                     .lowestMoodScore(0)
                     .commonMoodTags(List.of())
                     .moodTrendData(Map.of())
-                    .period(getPeriodString(startDate, endDate))
                     .build();
         }
 
@@ -121,7 +112,7 @@ public class MoodService {
                 .orElse(0);
 
         // Get common mood tags
-//        List<String> commonMoodTags = moodEntryRepository.findMostCommonMoodTags(userId);
+        List<String> commonMoodTags = moodEntryRepository.findMostCommonMoodTags(user.getId());
 
         // Create mood trend data (grouped by day)
         Map<String, Integer> moodTrendData = moodEntries.stream()
@@ -137,17 +128,10 @@ public class MoodService {
                 .averageMoodScore(Math.round(averageMoodScore * 100.0) / 100.0)
                 .highestMoodScore(highestMoodScore)
                 .lowestMoodScore(lowestMoodScore)
-//                .commonMoodTags(commonMoodTags)
+                .commonMoodTags(commonMoodTags)
                 .moodTrendData(moodTrendData)
-                .period(getPeriodString(startDate, endDate))
                 .build();
     }
-
-//    @Transactional(readOnly = true)
-//    public List<String> getCommonMoodTags(String userId) {
-//        log.debug("Getting common mood tags for user: {}", userId);
-//        return moodEntryRepository.findMostCommonMoodTags(userId);
-//    }
 
     public void deleteMoodEntry(String code, String userId) {
         log.debug("Deleting mood entry: {} for user: {}", code, userId);
@@ -169,6 +153,18 @@ public class MoodService {
         log.debug("Deleted mood entry: {}", code);
     }
 
+    @Transactional(readOnly = true)
+    public List<MoodEntry> getRecentMoodsByPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+        // Default to last 7 days if no dates provided
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(23, 59, 59);
+
+        // Get mood entries in the date range
+        return moodEntryRepository
+                .findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, start, end);
+    }
+
     private MoodEntryDto mapToDto(MoodEntry moodEntry) {
         return MoodEntryDto.builder()
                 .code(moodEntry.getCode())
@@ -179,18 +175,5 @@ public class MoodService {
                 .build();
     }
 
-    private String getPeriodString(LocalDate startDate, LocalDate endDate) {
-        long daysBetween = startDate.until(endDate).getDays();
-
-        if (daysBetween <= 7) {
-            return "week";
-        } else if (daysBetween <= 31) {
-            return "month";
-        } else if (daysBetween <= 92) {
-            return "quarter";
-        } else {
-            return "custom";
-        }
-    }
 
 }
