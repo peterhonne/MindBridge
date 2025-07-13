@@ -893,11 +893,13 @@
                                     Generate Insights
                                 </button>
                             </div>
-                            <div id="dailyInsight" style="font-size: 16px; line-height: 1.6; opacity: 0.9; margin-bottom: 15px;">
-                                <!-- Insights will appear here -->
-                            </div>
-                            <div id="additionalInsights" style="font-size: 14px; line-height: 1.5; opacity: 0.8;">
-                                <!-- AI insights will appear here after generation -->
+                            <div id="insightsContainer">
+                                <div id="dailyInsight" style="font-size: 16px; line-height: 1.6; opacity: 0.9; margin-bottom: 15px;">
+                                    <!-- Insights will appear here -->
+                                </div>
+                                <div id="additionalInsights" style="font-size: 16px; line-height: 1.6; opacity: 0.9;">
+                                    <!-- Additional insights will appear here -->
+                                </div>
                             </div>
                         </div>
 
@@ -1111,7 +1113,8 @@
 
     <!-- STOMP.js for WebSocket communication -->
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
-    <script src="https://unpkg.com/marked@9.1.2/marked.min.js"></script>
+    <script src="https://unpkg.com/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-emoji@3.0.0/dist/markdown-it-emoji-bare.min.js"></script>
     <!-- Keycloak JS -->
     <script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.0/dist/keycloak.min.js"></script>
 
@@ -1398,25 +1401,26 @@
         // Helper function to validate token with server
         async function validateTokenWithServer(token) {
             try {
-                // Make a lightweight API call to verify token
-                const response = await fetch(`${API_CONFIG.backendUrl}/v1/agent/user/profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                });
+                // Create API instance with the token
+                const tempApi = new ApiClient(token);
                 
-                if (response.ok) {
-                    // Cache the user profile to avoid duplicate calls
-                    const profileData = await response.json();
+                // Use the existing getUserProfile method which handles 404/create flow
+                const profileData = await tempApi.getUserProfile();
+                if (profileData) {
+                    // Cache the user profile
                     userProfile = profileData;
                     return true;
                 }
                 return false;
             } catch (error) {
-                console.log('Token validation failed:', error);
-                return false;
+                // Check if it's an authentication error (401/403) vs other errors
+                if (error.message.includes('401') || error.message.includes('403')) {
+                    console.log('Token validation failed: unauthorized');
+                    return false;
+                } else {
+                    console.log('Token validation failed:', error);
+                    return false;
+                }
             }
         }
 
@@ -2359,45 +2363,6 @@
         // Global API client instance
         const apiClient = new ApiClient();
 
-        // Lightweight Markdown Parser
-        function parseMarkdown(markdown) {
-            if (!markdown) return '';
-            
-            let html = markdown
-                // Headers
-                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-                
-                // Bold and italic
-                .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                
-                // Lists
-                .replace(/^\* (.*$)/gm, '<li>$1</li>')
-                .replace(/^- (.*$)/gm, '<li>$1</li>')
-                
-                // Links
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-                
-                // Line breaks
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
-            
-            // Wrap lists in ul tags
-            html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-            
-            // Remove duplicate ul tags
-            html = html.replace(/<\/ul>\s*<ul>/g, '');
-            
-            // Wrap in paragraph tags if not already wrapped
-            if (!html.startsWith('<h') && !html.startsWith('<ul') && !html.startsWith('<p>')) {
-                html = '<p>' + html + '</p>';
-            }
-            
-            return html;
-        }
 
         // User Profile Management
         let userProfile = null;
@@ -2618,6 +2583,65 @@
             }
         }
 
+        // Create tabbed interface for insights
+        function createInsightTabs(emotionalContent, trendContent) {
+            const container = document.getElementById('insightsContainer');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="insight-tabs">
+                    <div class="tab-buttons" style="display: flex; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                        <button class="tab-btn active" onclick="showInsightTab('emotional')" 
+                                style="background: none; border: none; color: white; padding: 10px 20px; cursor: pointer; border-bottom: 2px solid rgba(255,255,255,0.8); font-weight: 600;">
+                            🧠 Emotional Analysis
+                        </button>
+                        <button class="tab-btn" onclick="showInsightTab('trend')" 
+                                style="background: none; border: none; color: rgba(255,255,255,0.6); padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 600;">
+                            📈 Trend Analysis
+                        </button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="emotional-tab" class="tab-pane active" style="font-size: 16px; line-height: 1.6; opacity: 0.9;">
+                            ${emotionalContent}
+                        </div>
+                        <div id="trend-tab" class="tab-pane" style="font-size: 16px; line-height: 1.6; opacity: 0.9; display: none;">
+                            ${trendContent}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Switch between insight tabs
+        function showInsightTab(tabName) {
+            // Update button states
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.style.color = 'rgba(255,255,255,0.6)';
+                btn.style.borderBottomColor = 'transparent';
+                btn.classList.remove('active');
+            });
+            
+            // Update content visibility
+            const panes = document.querySelectorAll('.tab-pane');
+            panes.forEach(pane => {
+                pane.style.display = 'none';
+                pane.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedBtn = event.target;
+            const selectedPane = document.getElementById(`${tabName}-tab`);
+            
+            if (selectedBtn && selectedPane) {
+                selectedBtn.style.color = 'white';
+                selectedBtn.style.borderBottomColor = 'rgba(255,255,255,0.8)';
+                selectedBtn.classList.add('active');
+                selectedPane.style.display = 'block';
+                selectedPane.classList.add('active');
+            }
+        }
+
         // Manual insight request function
         async function requestInsights() {
             const insightContainer = document.getElementById('dailyInsight');
@@ -2661,17 +2685,19 @@
                 const insightData = await apiClient.getDashboardMoodInsight(dashboardState.startDate, dashboardState.endDate);
                 
                 if (insightData && insightData.emotionalState) {
-                    // Parse markdown content
-                    const parsedContent = parseMarkdown(insightData.emotionalState);
+                    // Parse markdown content with modern renderer
+                    const parsedEmotional = formatMarkdown(insightData.emotionalState);
+                    const parsedTrend = insightData.trendAnalysis ? formatMarkdown(insightData.trendAnalysis) : null;
                     
-                    if (insightContainer) {
-                        insightContainer.innerHTML = parsedContent;
-                    }
-                    
-                    // Show trend analysis if available
-                    if (insightData.trendAnalysis && additionalContainer) {
-                        const parsedTrend = parseMarkdown(insightData.trendAnalysis);
-                        additionalContainer.innerHTML = parsedTrend;
+                    // If both insights are available, create tabs
+                    if (parsedTrend && insightContainer) {
+                        createInsightTabs(parsedEmotional, parsedTrend);
+                    } else if (insightContainer) {
+                        // Only emotional state available
+                        insightContainer.innerHTML = parsedEmotional;
+                        if (additionalContainer) {
+                            additionalContainer.innerHTML = '';
+                        }
                     }
                     
                     // Update button to show refresh option
@@ -4065,6 +4091,21 @@
 
 
 
+        // Initialize markdown-it with plugins
+        let markdownRenderer = null;
+        
+        function initMarkdownRenderer() {
+            if (typeof markdownit !== 'undefined' && !markdownRenderer) {
+                markdownRenderer = markdownit({
+                    html: true,        // Enable HTML tags in source
+                    breaks: true,      // Convert '\n' in paragraphs into <br>
+                    linkify: true,     // Autoconvert URL-like text to links
+                    typographer: true  // Enable some language-neutral replacement + quotes beautification
+                })
+                .use(markdownitEmoji); // Add emoji support
+            }
+        }
+
         function formatMarkdown(text) {
             try {
                 // First handle escaped newlines and clean up the text
@@ -4073,19 +4114,14 @@
                     .replace(/\\\"/g, '"')  // Convert \" to actual quotes
                     .trim();
                 
-                // Use the marked library for proper markdown parsing
-                if (typeof marked !== 'undefined') {
-                    // Configure marked for better rendering
-                    marked.setOptions({
-                        breaks: true,
-                        gfm: true,
-                        sanitize: false,
-                        headerIds: false,
-                        mangle: false
-                    });
-                    return marked.parse(cleanedText);
+                // Initialize markdown renderer if not done
+                initMarkdownRenderer();
+                
+                // Use markdown-it for modern markdown parsing
+                if (markdownRenderer) {
+                    return markdownRenderer.render(cleanedText);
                 } else {
-                    // Fallback to enhanced formatting if marked isn't available
+                    // Fallback to enhanced formatting if markdown-it isn't available
                     return enhancedMarkdownFormat(cleanedText);
                 }
             } catch (error) {
