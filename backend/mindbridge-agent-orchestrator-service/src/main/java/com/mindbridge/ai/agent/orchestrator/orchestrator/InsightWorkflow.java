@@ -65,6 +65,8 @@ public class InsightWorkflow {
             String journalHistory = String.join("\n", journalEntries);
             return chatClientBuilder.clone().build().prompt()
                     .system("""
+                            Please respond in a formal and objective tone without conversational fillers or casual language.
+                            Do not start with disclaimers, conversational phrases, introductory or framing phrases.
                             Analyze the emotional state in recent journal entries.
                             Identify primary emotions, emotional intensity (1-10), and emotional triggers.
                             Provide supportive insights in a caring, non-judgmental tone.
@@ -86,6 +88,8 @@ public class InsightWorkflow {
             String moodHistory = String.join("\n", recentMoodLogs);
             return chatClientBuilder.clone().build().prompt()
                     .system("""
+                            Please respond in a formal and objective tone without conversational fillers or casual language.
+                            Do not start with disclaimers, conversational phrases, introductory or framing phrases.
                             Analyze mood trends from these recent mood logs.
                             Identify patterns, improvements, concerning trends, and cyclical behaviors.
                             Focus on actionable insights and progress indicators.
