@@ -153,8 +153,8 @@ public class JournalService {
             throw new RuntimeException("Access denied");
         }
 
-        // Delete associated embeddings
-        embeddingService.deleteEmbeddingsForDocument("journal_entry", journalEntry.getId(), user.getId());
+        // TODO Delete associated embeddings
+
 
         journalEntryRepository.delete(journalEntry);
         log.debug("Deleted journal entry: {}", code);

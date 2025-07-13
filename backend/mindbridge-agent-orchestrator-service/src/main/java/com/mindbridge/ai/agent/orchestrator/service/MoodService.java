@@ -146,8 +146,8 @@ public class MoodService {
             throw new RuntimeException("Access denied");
         }
 
-        // Delete associated embeddings
-        embeddingService.deleteEmbeddingsForDocument("mood_entry", moodEntry.getId(), user.getId());
+        // TODO Delete associated embeddings
+
 
         moodEntryRepository.delete(moodEntry);
         log.debug("Deleted mood entry: {}", code);

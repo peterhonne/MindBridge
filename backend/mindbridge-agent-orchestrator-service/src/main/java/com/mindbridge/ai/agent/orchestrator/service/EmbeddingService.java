@@ -2,11 +2,9 @@ package com.mindbridge.ai.agent.orchestrator.service;
 
 import com.mindbridge.ai.agent.orchestrator.models.entity.JournalEntry;
 import com.mindbridge.ai.agent.orchestrator.models.entity.MoodEntry;
-import com.mindbridge.ai.agent.orchestrator.repository.DocumentEmbeddingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ public class EmbeddingService {
 
 
     private final VectorStore vectorStore;
-    private final DocumentEmbeddingRepository documentEmbeddingRepository;
 
     @Async
     @Transactional
@@ -137,22 +134,6 @@ public class EmbeddingService {
         }
 
         return metadata;
-    }
-
-    public void deleteEmbeddingsForDocument(String documentType, Long documentId, Long userId) {
-        log.debug("Deleting embeddings for {} with id: {}", documentType, documentId);
-
-        try {
-            // Delete from our manual tracking table
-            documentEmbeddingRepository.deleteByUserIdAndDocumentTypeAndDocumentId(userId, documentType, documentId);
-
-            // Note: For Spring AI VectorStore, you would need to implement custom deletion
-            // based on metadata filtering. This is a limitation of the current VectorStore API
-            log.debug("Deleted embeddings for {} {}", documentType, documentId);
-        } catch (Exception e) {
-            log.error("Error deleting embeddings for {} {}: {}",
-                    documentType, documentId, e.getMessage());
-        }
     }
 
 }
