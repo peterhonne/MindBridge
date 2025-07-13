@@ -2031,6 +2031,15 @@
                     window.location.hash = viewName;
                 }
                 
+                // Refresh dashboard data when returning to dashboard (user might have added data)
+                if (viewName === 'dashboard' && typeof loadDashboardData === 'function') {
+                    loadDashboardData().then(() => {
+                        updateDashboardDisplay();
+                    }).catch(error => {
+                        console.error('Failed to refresh dashboard data:', error);
+                    });
+                }
+                
                 // Update active navigation item
                 this.updateNavigation(viewName);
                 
@@ -2150,6 +2159,13 @@
 
         // Make router globally accessible
         window.navigateTo = function(viewName) {
+            if (appRouter) {
+                appRouter.navigateToView(viewName);
+            }
+        };
+        
+        // Global showView function for onboarding buttons
+        window.showView = function(viewName) {
             if (appRouter) {
                 appRouter.navigateToView(viewName);
             }
@@ -2536,6 +2552,19 @@
                 dashboardData.recentJournalEntries = journalHistory.content || [];
                 dashboardData.journalCount = journalHistory.totalElements || 0;
 
+                // Check if user is new (no mood or journal data)
+                const hasMoodData = dashboardData.recentMoodEntries.length > 0;
+                const hasJournalData = dashboardData.journalCount > 0;
+                dashboardData.isNewUser = !hasMoodData && !hasJournalData;
+                
+                console.log('Dashboard data check:', {
+                    moodEntries: dashboardData.recentMoodEntries.length,
+                    journalCount: dashboardData.journalCount,
+                    hasMoodData,
+                    hasJournalData,
+                    isNewUser: dashboardData.isNewUser
+                });
+
                 // Use server-side trend data instead of client-side calculation
                 dashboardData.serverTrends = dashboardTrends;
                 console.log('Server trends data:', dashboardTrends);
@@ -2583,9 +2612,94 @@
             }
         }
 
+        // Show onboarding guidance for new users
+        function showOnboardingGuidance() {
+            // Hide insights section completely - find by the heading text
+            const insightsHeading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Your Wellness Insights'));
+            
+            if (insightsHeading) {
+                const insightsSection = insightsHeading.closest('div[style*="linear-gradient"]');
+                if (insightsSection) {
+                    insightsSection.style.display = 'none';
+                    console.log('Insights section hidden');
+                } else {
+                    console.log('Could not find insights section parent');
+                }
+            } else {
+                console.log('Could not find insights heading');
+            }
+            
+            // Hide mood trend chart section for new users
+            const moodTrendHeading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Mood Trend'));
+            if (moodTrendHeading) {
+                const moodTrendSection = moodTrendHeading.closest('div[style*="background: white"]');
+                if (moodTrendSection) {
+                    moodTrendSection.style.display = 'none';
+                    console.log('Mood trend section hidden');
+                    
+                    // Only create onboarding card if it doesn't exist
+                    if (!document.getElementById('onboarding-card')) {
+                        // Insert onboarding card after the hidden mood trend section
+                        const onboardingCard = document.createElement('div');
+                        onboardingCard.id = 'onboarding-card';
+                        onboardingCard.style.cssText = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px; text-align: center; color: white;';
+                        onboardingCard.innerHTML = `
+                            <div style="font-size: 48px; margin-bottom: 20px;">🎯</div>
+                            <h2 style="color: white; margin-bottom: 15px; font-size: 24px;">Welcome to MindBridge!</h2>
+                            <p style="margin-bottom: 30px; font-size: 16px; line-height: 1.5; color: rgba(255,255,255,0.9);">
+                                Start your wellness journey by tracking your first mood and creating a journal entry.
+                            </p>
+                            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                                <button onclick="showView('mood')" 
+                                        style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 15px 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-2px)'"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0px)'">
+                                    <span>😊</span> Track Your First Mood
+                                </button>
+                                <button onclick="showView('journal')" 
+                                        style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 15px 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-2px)'"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0px)'">
+                                    <span>📝</span> Write Your First Journal
+                                </button>
+                            </div>
+                            <p style="margin-top: 25px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                                Once you've added some data, you'll see beautiful insights and trends here!
+                            </p>
+                        `;
+                        moodTrendSection.parentNode.insertBefore(onboardingCard, moodTrendSection);
+                    }
+                } else {
+                    console.log('Could not find mood trend section parent');
+                }
+            } else {
+                console.log('Could not find mood trend heading');
+            }
+            
+            // Update mood card with onboarding message
+            const recentMoodScore = document.getElementById('recentMoodScore');
+            const recentMoodDate = document.getElementById('recentMoodDate');
+            const todayMoodEmoji = document.getElementById('todayMoodEmoji');
+            
+            if (recentMoodScore) recentMoodScore.textContent = '?';
+            if (todayMoodEmoji) todayMoodEmoji.textContent = '🌟';
+            if (recentMoodDate) recentMoodDate.textContent = 'Start your journey!';
+            
+            // Update analytics with onboarding message
+            const weeklyMoodAvg = document.getElementById('weeklyMoodAvg');
+            const moodTrendIcon = document.getElementById('moodTrendIcon');
+            const moodTrendText = document.getElementById('moodTrendText');
+            const periodLabel = document.getElementById('periodLabel');
+            
+            if (weeklyMoodAvg) weeklyMoodAvg.textContent = '-';
+            if (moodTrendIcon) moodTrendIcon.textContent = '📈';
+            if (moodTrendText) moodTrendText.textContent = 'Start tracking to see trends';
+            if (periodLabel) periodLabel.textContent = 'Welcome';
+        }
+
         // Create tabbed interface for insights
         function createInsightTabs(emotionalContent, trendContent) {
-            const container = document.getElementById('insightsContainer');
+            const container = document.getElementById('dailyInsight');
             if (!container) return;
             
             container.innerHTML = `
@@ -2684,15 +2798,23 @@
                 // Load server insights (can take a few seconds)
                 const insightData = await apiClient.getDashboardMoodInsight(dashboardState.startDate, dashboardState.endDate);
                 
-                if (insightData && insightData.emotionalState) {
+                if (insightData && (insightData.emotionalState || insightData.trendAnalysis)) {
                     // Parse markdown content with modern renderer
-                    const parsedEmotional = formatMarkdown(insightData.emotionalState);
+                    const parsedEmotional = insightData.emotionalState ? formatMarkdown(insightData.emotionalState) : null;
                     const parsedTrend = insightData.trendAnalysis ? formatMarkdown(insightData.trendAnalysis) : null;
                     
+                    console.log('Insight data received:', { parsedEmotional, parsedTrend });
+                    
                     // If both insights are available, create tabs
-                    if (parsedTrend && insightContainer) {
+                    if (parsedTrend && parsedEmotional && insightContainer) {
                         createInsightTabs(parsedEmotional, parsedTrend);
-                    } else if (insightContainer) {
+                    } else if (parsedTrend && insightContainer) {
+                        // Only trend analysis available
+                        insightContainer.innerHTML = parsedTrend;
+                        if (additionalContainer) {
+                            additionalContainer.innerHTML = '';
+                        }
+                    } else if (parsedEmotional && insightContainer) {
                         // Only emotional state available
                         insightContainer.innerHTML = parsedEmotional;
                         if (additionalContainer) {
@@ -2789,6 +2911,41 @@
         }
 
         function updateDashboardDisplay() {
+            console.log('updateDashboardDisplay called, isNewUser:', dashboardData.isNewUser);
+            
+            // Check if user is new and show onboarding guidance
+            if (dashboardData.isNewUser) {
+                console.log('Showing onboarding guidance');
+                showOnboardingGuidance();
+                return;
+            }
+            
+            console.log('Showing normal dashboard');
+            
+            // Show insights section when user has data
+            const insightsHeading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Your Wellness Insights'));
+            if (insightsHeading) {
+                const insightsSection = insightsHeading.closest('div[style*="linear-gradient"]');
+                if (insightsSection) {
+                    insightsSection.style.display = 'block';
+                }
+            }
+            
+            // Show mood trend section when user has data
+            const moodTrendHeading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Mood Trend'));
+            if (moodTrendHeading) {
+                const moodTrendSection = moodTrendHeading.closest('div[style*="background: white"]');
+                if (moodTrendSection) {
+                    moodTrendSection.style.display = 'block';
+                }
+            }
+            
+            // Remove onboarding card if it exists
+            const onboardingCard = document.getElementById('onboarding-card');
+            if (onboardingCard) {
+                onboardingCard.remove();
+            }
+            
             // Update today's mood card
             const recentMoodScore = document.getElementById('recentMoodScore');
             const recentMoodDate = document.getElementById('recentMoodDate');
@@ -4098,35 +4255,52 @@
             if (typeof markdownit !== 'undefined' && !markdownRenderer) {
                 markdownRenderer = markdownit({
                     html: true,        // Enable HTML tags in source
-                    breaks: true,      // Convert '\n' in paragraphs into <br>
+                    breaks: false,     // Don't auto-convert line breaks - let proper markdown handle it
                     linkify: true,     // Autoconvert URL-like text to links
-                    typographer: true  // Enable some language-neutral replacement + quotes beautification
+                    typographer: false // Disable to avoid interference with formatting
                 })
                 .use(markdownitEmoji); // Add emoji support
             }
         }
 
         function formatMarkdown(text) {
+            if (!text || typeof text !== 'string') return '';
+            
             try {
-                // First handle escaped newlines and clean up the text
+                // Preprocess the text to fix AI formatting issues
                 let cleanedText = text
-                    .replace(/\\n/g, '\n')  // Convert \n to actual newlines
-                    .replace(/\\\"/g, '"')  // Convert \" to actual quotes
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\\"/g, '"')
+                    // Fix the specific AI list format: "*   **Title:**" -> "- **Title:**"
+                    .replace(/^\*\s+/gm, '- ')
+                    // Ensure proper spacing around headers
+                    .replace(/^(\*\*[^*]+\*\*):?\s*$/gm, '\n$1\n')
+                    // Remove undefined artifacts
+                    .replace(/\bundefined\b/g, '')
+                    // Clean up excessive newlines
+                    .replace(/\n{3,}/g, '\n\n')
                     .trim();
                 
                 // Initialize markdown renderer if not done
                 initMarkdownRenderer();
                 
-                // Use markdown-it for modern markdown parsing
+                // Use markdown-it with proper configuration
                 if (markdownRenderer) {
-                    return markdownRenderer.render(cleanedText);
-                } else {
-                    // Fallback to enhanced formatting if markdown-it isn't available
-                    return enhancedMarkdownFormat(cleanedText);
+                    const rendered = markdownRenderer.render(cleanedText);
+                    // Post-process to remove any remaining undefined artifacts
+                    return rendered.replace(/undefined/g, '');
                 }
+                
+                // Simple fallback: just handle line breaks and basic formatting
+                return cleanedText
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
             } catch (error) {
                 console.error('Error formatting markdown:', error);
-                return enhancedMarkdownFormat(text);
+                // Return plain text with line breaks as last resort
+                return text.replace(/\n/g, '<br>').replace(/undefined/g, '');
             }
         }
 
