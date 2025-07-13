@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindBridge AI - Therapeutic Platform</title>
     <link rel="icon" href="favicon.png" type="image/png" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
         * {
             margin: 0;
@@ -777,41 +779,96 @@
                     <div style="max-width: 1200px; margin: 0 auto;">
                         <h1 style="color: #333; margin-bottom: 30px; font-size: 2rem;">Welcome back, <span id="dashboardUserName">User</span>!</h1>
                         
-                        <!-- Quick Stats -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Today's Mood</h3>
-                                <div style="font-size: 2.5rem; color: #333;" id="recentMoodScore">-</div>
-                                <div style="color: #666; font-size: 14px;" id="recentMoodDate">No entries yet</div>
-                            </div>
-                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                                <h3 style="color: #4a90e2; margin-bottom: 10px;">7-Day Average</h3>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 2.5rem; color: #333;" id="weeklyMoodAvg">-</div>
-                                    <div style="font-size: 1.5rem;" id="moodTrendIcon">📊</div>
+                        <!-- Enhanced Quick Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; min-height: 120px;">
+                            <!-- Today's Mood Card -->
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); color: white;">
+                                <h3 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                    📊 Today's Mood
+                                </h3>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-size: 2.5rem; font-weight: 600;" id="recentMoodScore">-</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 13px;" id="recentMoodDate">No entries yet</div>
+                                    </div>
+                                    <div style="font-size: 3rem; opacity: 0.7;" id="todayMoodEmoji">😐</div>
                                 </div>
-                                <div style="color: #666; font-size: 14px;" id="moodTrendText">Calculating...</div>
                             </div>
-                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Journal Entries</h3>
-                                <div style="font-size: 2.5rem; color: #333;" id="journalCount">-</div>
-                                <div style="color: #666; font-size: 14px;">Total entries</div>
-                            </div>
-                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                                <h3 style="color: #4a90e2; margin-bottom: 10px;">Streak</h3>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 2.5rem; color: #333;" id="streakCount">-</div>
-                                    <div style="font-size: 1.5rem;">🔥</div>
+
+                            <!-- Period Average Card -->
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border: 2px solid #f0f9ff;">
+                                <h3 style="color: #4a90e2; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                    📈 <span id="periodLabel">7-Day</span> Average
+                                </h3>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-size: 2.5rem; color: #333; font-weight: 600;" id="weeklyMoodAvg">-</div>
+                                        <div style="color: #666; font-size: 13px;" id="moodTrendText">Calculating...</div>
+                                    </div>
+                                    <div style="font-size: 2rem;" id="moodTrendIcon">📊</div>
                                 </div>
-                                <div style="color: #666; font-size: 14px;" id="streakText">Days active</div>
+                            </div>
+
+                            <!-- Mood Range Card -->
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border: 2px solid #fef3f2;">
+                                <h3 style="color: #dc2626; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                    📊 Mood Range
+                                </h3>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 12px; color: #666;">Low</span>
+                                            <span style="font-size: 12px; color: #666;">High</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="font-size: 1.8rem; color: #dc2626; font-weight: 600;" id="lowestMoodScore">-</div>
+                                            <div style="flex: 1; height: 4px; background: linear-gradient(to right, #dc2626, #10b981); border-radius: 2px;"></div>
+                                            <div style="font-size: 1.8rem; color: #10b981; font-weight: 600;" id="highestMoodScore">-</div>
+                                        </div>
+                                        <div style="color: #666; font-size: 13px; margin-top: 5px;" id="rangeText">Period range</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Active Days Card -->
+                            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border: 2px solid #f0fdf4;">
+                                <h3 style="color: #16a34a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                    📅 Active Days
+                                </h3>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                                            <div style="font-size: 2.5rem; color: #333; font-weight: 600;" id="activeDaysCount">-</div>
+                                            <div style="font-size: 1.2rem; color: #666;" id="totalDaysCount">/ -</div>
+                                        </div>
+                                        <div style="color: #666; font-size: 13px;" id="activeDaysText">days tracked</div>
+                                    </div>
+                                    <div style="font-size: 2.5rem; color: #16a34a; opacity: 0.7;">📈</div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Mood Trend Chart -->
                         <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h2 style="color: #333; margin: 0;">7-Day Mood Trend</h2>
-                                <div style="display: flex; gap: 15px; font-size: 14px; color: #666;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                                        <h2 style="color: #333; margin: 0;" id="chartTitle">Mood Trend</h2>
+                                        <!-- Period Selector -->
+                                        <select id="periodSelector" onchange="onPeriodChange()" 
+                                                style="padding: 6px 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; color: #374151; font-size: 14px; font-weight: 500; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                                            <option value="7">Last 7 days</option>
+                                            <option value="14">Last 2 weeks</option>
+                                            <option value="30">Last 30 days</option>
+                                            <option value="90">Last 3 months</option>
+                                        </select>
+                                    </div>
+                                    <!-- Common mood tags in header -->
+                                    <div id="chartMoodTags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 5px;">
+                                        <!-- Tags will be populated here -->
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 15px; font-size: 14px; color: #666; margin-top: 5px;">
                                     <div style="display: flex; align-items: center; gap: 5px;">
                                         <div style="width: 12px; height: 12px; background: #4a90e2; border-radius: 50%;"></div>
                                         <span>Mood Score</span>
@@ -827,12 +884,20 @@
 
                         <!-- Insights Panel -->
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px; color: white;">
-                            <h2 style="color: white; margin: 0 0 15px 0;">🧠 Your Wellness Insights</h2>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="color: white; margin: 0;">🧠 Your Wellness Insights</h2>
+                                <button id="generateInsightsBtn" onclick="requestInsights()" 
+                                        style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.borderColor='rgba(255,255,255,0.5)'"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.3)'">
+                                    Generate Insights
+                                </button>
+                            </div>
                             <div id="dailyInsight" style="font-size: 16px; line-height: 1.6; opacity: 0.9; margin-bottom: 15px;">
-                                Analyzing your mood patterns...
+                                <!-- Insights will appear here -->
                             </div>
                             <div id="additionalInsights" style="font-size: 14px; line-height: 1.5; opacity: 0.8;">
-                                <!-- Additional insights will appear here -->
+                                <!-- AI insights will appear here after generation -->
                             </div>
                         </div>
 
@@ -1342,7 +1407,13 @@
                     },
                 });
                 
-                return response.ok; // Returns true if token is valid (status 200-299)
+                if (response.ok) {
+                    // Cache the user profile to avoid duplicate calls
+                    const profileData = await response.json();
+                    userProfile = profileData;
+                    return true;
+                }
+                return false;
             } catch (error) {
                 console.log('Token validation failed:', error);
                 return false;
@@ -2190,6 +2261,36 @@
                 }
             }
 
+            async getDashboardMoodTrends(startDate, endDate) {
+                let url = '/dashboard/mood/trends';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await this.makeRequest(url);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch dashboard mood trends: ${response.status}`);
+                }
+            }
+
+            async getDashboardMoodInsight(startDate, endDate) {
+                let url = '/dashboard/mood/insight';
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await this.makeRequest(url);
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    throw new Error(`Failed to fetch dashboard mood insight: ${response.status}`);
+                }
+            }
+
             async createMoodEntry(moodData) {
                 const response = await this.makeRequest('/mood', {
                     method: 'POST',
@@ -2258,12 +2359,55 @@
         // Global API client instance
         const apiClient = new ApiClient();
 
+        // Lightweight Markdown Parser
+        function parseMarkdown(markdown) {
+            if (!markdown) return '';
+            
+            let html = markdown
+                // Headers
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                
+                // Bold and italic
+                .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                
+                // Lists
+                .replace(/^\* (.*$)/gm, '<li>$1</li>')
+                .replace(/^- (.*$)/gm, '<li>$1</li>')
+                
+                // Links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+                
+                // Line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            // Wrap lists in ul tags
+            html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+            
+            // Remove duplicate ul tags
+            html = html.replace(/<\/ul>\s*<ul>/g, '');
+            
+            // Wrap in paragraph tags if not already wrapped
+            if (!html.startsWith('<h') && !html.startsWith('<ul') && !html.startsWith('<p>')) {
+                html = '<p>' + html + '</p>';
+            }
+            
+            return html;
+        }
+
         // User Profile Management
         let userProfile = null;
 
         async function loadUserProfile() {
             try {
-                userProfile = await apiClient.getUserProfile();
+                // Use cached profile if available from token validation
+                if (!userProfile) {
+                    userProfile = await apiClient.getUserProfile();
+                }
                 updateUserProfileDisplay();
             } catch (error) {
                 console.error('Failed to load user profile:', error);
@@ -2327,9 +2471,70 @@
             recentJournalEntries: []
         };
 
+        // Dashboard state management
+        let dashboardState = {
+            selectedPeriod: 7, // Default to 7 days
+            startDate: null,
+            endDate: null
+        };
+
+        // Calculate date range based on selected period
+        function calculateDateRange(days) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - days);
+            
+            const result = {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0]
+            };
+            
+            console.log(`calculateDateRange(${days}):`, result.startDate, 'to', result.endDate);
+            console.log('Today is:', new Date().toDateString());
+            
+            return result;
+        }
+
+        // Period change handler
+        function onPeriodChange() {
+            const selector = document.getElementById('periodSelector');
+            if (!selector) return;
+            
+            dashboardState.selectedPeriod = parseInt(selector.value);
+            const dateRange = calculateDateRange(dashboardState.selectedPeriod);
+            dashboardState.startDate = dateRange.startDate;
+            dashboardState.endDate = dateRange.endDate;
+            
+            // Show loading state
+            const chartContainer = document.getElementById('moodChart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">Loading mood trend...</div>';
+            }
+            
+            // Reload dashboard data with new period
+            loadDashboardData().then(() => {
+                updateDashboardDisplay();
+            }).catch(error => {
+                console.error('Failed to reload dashboard data:', error);
+                // Clear loading state on error
+                const chartContainer = document.getElementById('moodChart');
+                if (chartContainer) {
+                    chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">Failed to load mood data</div>';
+                }
+            });
+        }
+
         async function initDashboard() {
+            // Initialize date range for default period
+            const dateRange = calculateDateRange(dashboardState.selectedPeriod);
+            dashboardState.startDate = dateRange.startDate;
+            dashboardState.endDate = dateRange.endDate;
+            
             await loadDashboardData();
             updateDashboardDisplay();
+            
+            // Initialize insights panel empty state
+            initializeInsightsPanel();
         }
 
         // Helper function to check if a date is today
@@ -2343,8 +2548,14 @@
 
         async function loadDashboardData() {
             try {
-                // Load recent mood entries (last 30 for analysis)
-                const moodHistory = await apiClient.getMoodHistory(0, 30);
+                // Start all API calls in parallel for better performance
+                const [moodHistory, journalHistory, dashboardTrends] = await Promise.all([
+                    apiClient.getMoodHistory(0, 30),
+                    apiClient.getJournalEntries(0, 20),
+                    apiClient.getDashboardMoodTrends(dashboardState.startDate, dashboardState.endDate)
+                ]);
+
+                // Process mood history data
                 dashboardData.recentMoodEntries = moodHistory.content || [];
                 
                 // Find today's mood entry specifically
@@ -2356,55 +2567,256 @@
                     }
                 }
 
-                // Load recent journal entries
-                const journalHistory = await apiClient.getJournalEntries(0, 20);
+                // Process journal data
                 dashboardData.recentJournalEntries = journalHistory.content || [];
                 dashboardData.journalCount = journalHistory.totalElements || 0;
 
-                // Calculate analytics
-                dashboardData.analytics = calculateMoodAnalytics(dashboardData.recentMoodEntries);
-                dashboardData.streak = calculateActivityStreak(dashboardData.recentMoodEntries, dashboardData.recentJournalEntries);
+                // Use server-side trend data instead of client-side calculation
+                dashboardData.serverTrends = dashboardTrends;
+                console.log('Server trends data:', dashboardTrends);
+                
+                dashboardData.analytics = {
+                    weeklyAverage: dashboardTrends.averageMoodScore || 0,
+                    highestScore: dashboardTrends.highestMoodScore || 0,
+                    lowestScore: dashboardTrends.lowestMoodScore || 0,
+                    commonTags: dashboardTrends.commonMoodTags || [],
+                    moodTrendData: dashboardTrends.moodTrendData || {},
+                    // Use client-side selected period instead of server period
+                    period: dashboardState.selectedPeriod ? `${dashboardState.selectedPeriod} days` : '7 days',
+                    // Keep some client-side calculations for fallback
+                    last7Days: calculateMoodAnalytics(dashboardData.recentMoodEntries).last7Days || []
+                };
+                
+                console.log('Dashboard analytics processed:', dashboardData.analytics);
 
             } catch (error) {
                 console.error('Failed to load dashboard data:', error);
-                // Use fallback data
+                // Use fallback data with client-side analytics
+                const fallbackAnalytics = calculateMoodAnalytics(dashboardData.recentMoodEntries || []);
                 dashboardData = {
                     recentMood: null,
                     journalCount: 0,
                     recentMoodEntries: [],
                     recentJournalEntries: [],
-                    analytics: { weeklyAverage: 0, trend: 'neutral', last7Days: [] },
-                    streak: 0
+                    serverTrends: null,
+                    analytics: fallbackAnalytics || { 
+                        weeklyAverage: 0, 
+                        trend: 'neutral', 
+                        last7Days: [],
+                        highestScore: 0,
+                        lowestScore: 0,
+                        commonTags: [],
+                        moodTrendData: {},
+                        period: dashboardState.selectedPeriod ? `${dashboardState.selectedPeriod} days` : '7 days'
+                    }
                 };
+                
+                // Ensure display gets updated even on error
+                if (typeof updateDashboardDisplay === 'function') {
+                    updateDashboardDisplay();
+                }
+            }
+        }
+
+        // Manual insight request function
+        async function requestInsights() {
+            const insightContainer = document.getElementById('dailyInsight');
+            const additionalContainer = document.getElementById('additionalInsights');
+            const generateBtn = document.getElementById('generateInsightsBtn');
+            
+            // Check if user has enough data for insights
+            const hasMoodData = dashboardData.recentMoodEntries && dashboardData.recentMoodEntries.length > 0;
+            const hasServerData = dashboardData.analytics && dashboardData.analytics.moodTrendData && 
+                                  Object.keys(dashboardData.analytics.moodTrendData).length > 0;
+            
+            if (!hasMoodData && !hasServerData) {
+                // Show empty state message
+                if (insightContainer) {
+                    insightContainer.innerHTML = '📊 Start tracking your mood to unlock personalized insights and AI-powered wellness analysis.';
+                }
+                if (additionalContainer) {
+                    additionalContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            try {
+                // Update button and show loading state
+                if (generateBtn) {
+                    generateBtn.textContent = 'Generating...';
+                    generateBtn.disabled = true;
+                    generateBtn.style.opacity = '0.6';
+                    generateBtn.style.cursor = 'not-allowed';
+                }
+                
+                if (insightContainer) {
+                    insightContainer.innerHTML = '🧠 Analyzing your mood patterns...';
+                }
+                
+                if (additionalContainer) {
+                    additionalContainer.innerHTML = '';
+                }
+                
+                // Load server insights (can take a few seconds)
+                const insightData = await apiClient.getDashboardMoodInsight(dashboardState.startDate, dashboardState.endDate);
+                
+                if (insightData && insightData.emotionalState) {
+                    // Parse markdown content
+                    const parsedContent = parseMarkdown(insightData.emotionalState);
+                    
+                    if (insightContainer) {
+                        insightContainer.innerHTML = parsedContent;
+                    }
+                    
+                    // Show trend analysis if available
+                    if (insightData.trendAnalysis && additionalContainer) {
+                        const parsedTrend = parseMarkdown(insightData.trendAnalysis);
+                        additionalContainer.innerHTML = parsedTrend;
+                    }
+                    
+                    // Update button to show refresh option
+                    if (generateBtn) {
+                        generateBtn.textContent = 'Refresh Insights';
+                        generateBtn.disabled = false;
+                        generateBtn.style.opacity = '1';
+                        generateBtn.style.cursor = 'pointer';
+                    }
+                } else {
+                    // Fallback to client-side insights
+                    loadClientSideInsights();
+                }
+                
+            } catch (error) {
+                console.warn('Failed to load server insights, using client-side fallback:', error);
+                
+                // Show error and fallback to client-side insights
+                if (insightContainer) {
+                    insightContainer.innerHTML = '⚠️ Unable to generate AI insights. Here are some basic observations:';
+                }
+                
+                loadClientSideInsights();
+                
+                // Reset button
+                if (generateBtn) {
+                    generateBtn.textContent = 'Try Again';
+                    generateBtn.disabled = false;
+                    generateBtn.style.opacity = '1';
+                    generateBtn.style.cursor = 'pointer';
+                }
+            }
+        }
+
+        // Initialize insights panel on dashboard load
+        function initializeInsightsPanel() {
+            const insightContainer = document.getElementById('dailyInsight');
+            const additionalContainer = document.getElementById('additionalInsights');
+            
+            // Check if user has any mood data
+            const hasMoodData = dashboardData.recentMoodEntries && dashboardData.recentMoodEntries.length > 0;
+            const hasServerData = dashboardData.analytics && dashboardData.analytics.moodTrendData && 
+                                  Object.keys(dashboardData.analytics.moodTrendData).length > 0;
+            
+            if (!hasMoodData && !hasServerData) {
+                if (insightContainer) {
+                    insightContainer.innerHTML = '💭 Your personalized insights will appear here once you start tracking your mood.';
+                }
+            } else {
+                if (insightContainer) {
+                    insightContainer.innerHTML = '🔍 Ready to analyze your mood patterns for meaningful insights.';
+                }
+            }
+            
+            if (additionalContainer) {
+                additionalContainer.innerHTML = '';
+            }
+        }
+
+        // Load client-side insights as fallback
+        function loadClientSideInsights() {
+            const insightContainer = document.getElementById('dailyInsight');
+            const additionalContainer = document.getElementById('additionalInsights');
+            
+            const allInsights = generateDataDrivenInsights();
+            
+            if (allInsights.length > 0) {
+                // Show the first insight as main insight
+                if (insightContainer && allInsights.length > 0) {
+                    insightContainer.innerHTML = allInsights[0];
+                }
+                
+                // Show additional insights
+                if (additionalContainer && allInsights.length > 1) {
+                    const insightsHtml = allInsights.slice(1, 4).map(insight => 
+                        `• ${insight}`
+                    ).join('<br>');
+                    additionalContainer.innerHTML = insightsHtml;
+                }
+            } else {
+                // No insights available
+                if (insightContainer) {
+                    insightContainer.innerHTML = '📈 Track your mood for a few days to see personalized insights and patterns.';
+                }
+                if (additionalContainer) {
+                    additionalContainer.innerHTML = '';
+                }
             }
         }
 
         function updateDashboardDisplay() {
-            // Update mood score
+            // Update today's mood card
             const recentMoodScore = document.getElementById('recentMoodScore');
             const recentMoodDate = document.getElementById('recentMoodDate');
+            const todayMoodEmoji = document.getElementById('todayMoodEmoji');
             
             if (dashboardData.recentMood) {
                 if (recentMoodScore) {
-                    const emoji = getMoodEmoji(dashboardData.recentMood.moodScore);
-                    recentMoodScore.textContent = `${emoji} ${dashboardData.recentMood.moodScore}`;
+                    recentMoodScore.textContent = dashboardData.recentMood.moodScore;
+                }
+                if (todayMoodEmoji) {
+                    todayMoodEmoji.textContent = getMoodEmoji(dashboardData.recentMood.moodScore);
                 }
                 if (recentMoodDate) {
                     const date = new Date(dashboardData.recentMood.createdAt);
                     recentMoodDate.textContent = date.toLocaleDateString();
                 }
             } else {
-                if (recentMoodScore) recentMoodScore.textContent = '😐 -';
+                if (recentMoodScore) recentMoodScore.textContent = '-';
+                if (todayMoodEmoji) todayMoodEmoji.textContent = '😐';
                 if (recentMoodDate) recentMoodDate.textContent = 'No entries today';
             }
 
-            // Update 7-day average and trend
+            // Update period average and trend
             const weeklyMoodAvg = document.getElementById('weeklyMoodAvg');
             const moodTrendIcon = document.getElementById('moodTrendIcon');
             const moodTrendText = document.getElementById('moodTrendText');
+            const periodLabel = document.getElementById('periodLabel');
             
-            if (weeklyMoodAvg && dashboardData.analytics) {
-                weeklyMoodAvg.textContent = dashboardData.analytics.weeklyAverage.toFixed(1);
+            if (dashboardData.analytics) {
+                if (weeklyMoodAvg) {
+                    weeklyMoodAvg.textContent = dashboardData.analytics.weeklyAverage.toFixed(1);
+                }
+                
+                if (periodLabel) {
+                    // Use selected period for consistency
+                    let formattedPeriod = 'Period';
+                    
+                    if (dashboardState.selectedPeriod) {
+                        const days = dashboardState.selectedPeriod;
+                        if (days === 7) {
+                            formattedPeriod = '7-Day';
+                        } else if (days === 14) {
+                            formattedPeriod = '2-Week';
+                        } else if (days === 30) {
+                            formattedPeriod = '30-Day';
+                        } else if (days === 90) {
+                            formattedPeriod = '3-Month';
+                        } else {
+                            formattedPeriod = `${days}-Day`;
+                        }
+                    }
+                    
+                    periodLabel.textContent = formattedPeriod;
+                }
                 
                 if (moodTrendIcon) {
                     moodTrendIcon.textContent = dashboardData.analytics.trend === 'improving' ? '📈' : 
@@ -2417,28 +2829,134 @@
                 }
             }
 
-            // Update journal count
-            const journalCount = document.getElementById('journalCount');
-            if (journalCount) {
-                journalCount.textContent = dashboardData.journalCount;
+            // Update mood range card
+            const lowestMoodScore = document.getElementById('lowestMoodScore');
+            const highestMoodScore = document.getElementById('highestMoodScore');
+            const rangeText = document.getElementById('rangeText');
+            
+            if (dashboardData.analytics) {
+                if (lowestMoodScore) {
+                    lowestMoodScore.textContent = dashboardData.analytics.lowestScore || '-';
+                }
+                if (highestMoodScore) {
+                    highestMoodScore.textContent = dashboardData.analytics.highestScore || '-';
+                }
+                if (rangeText) {
+                    // Use selected period for consistency
+                    let formattedPeriod = 'period';
+                    
+                    if (dashboardState.selectedPeriod) {
+                        const days = dashboardState.selectedPeriod;
+                        if (days === 7) {
+                            formattedPeriod = '7-day';
+                        } else if (days === 14) {
+                            formattedPeriod = '2-week';
+                        } else if (days === 30) {
+                            formattedPeriod = '30-day';
+                        } else if (days === 90) {
+                            formattedPeriod = '3-month';
+                        } else {
+                            formattedPeriod = `${days}-day`;
+                        }
+                    }
+                    
+                    rangeText.textContent = `${formattedPeriod} range`;
+                }
             }
 
-            // Update streak
-            const streakCount = document.getElementById('streakCount');
-            const streakText = document.getElementById('streakText');
-            if (streakCount) {
-                streakCount.textContent = dashboardData.streak;
+            // Update active days count
+            const activeDaysCount = document.getElementById('activeDaysCount');
+            const totalDaysCount = document.getElementById('totalDaysCount');
+            const activeDaysText = document.getElementById('activeDaysText');
+            
+            if (activeDaysCount && totalDaysCount && activeDaysText) {
+                const totalDays = dashboardState.selectedPeriod || 7;
+                let activeDays = 0;
+                
+                // Calculate active days from moodTrendData or recent entries
+                if (dashboardData.analytics && dashboardData.analytics.moodTrendData) {
+                    // Count days with mood data from server
+                    const moodDates = Object.keys(dashboardData.analytics.moodTrendData);
+                    activeDays = moodDates.filter(date => {
+                        const score = dashboardData.analytics.moodTrendData[date];
+                        return score !== null && score !== undefined;
+                    }).length;
+                } else if (dashboardData.recentMoodEntries) {
+                    // Fallback: count unique days from mood entries
+                    const uniqueDays = new Set();
+                    const cutoffDate = new Date();
+                    cutoffDate.setDate(cutoffDate.getDate() - totalDays);
+                    
+                    dashboardData.recentMoodEntries.forEach(entry => {
+                        const entryDate = new Date(entry.createdAt);
+                        if (entryDate >= cutoffDate) {
+                            const dateStr = entryDate.toISOString().split('T')[0];
+                            uniqueDays.add(dateStr);
+                        }
+                    });
+                    activeDays = uniqueDays.size;
+                }
+                
+                activeDaysCount.textContent = activeDays;
+                totalDaysCount.textContent = `/ ${totalDays}`;
+                
+                // Update the description based on consistency
+                const percentage = totalDays > 0 ? Math.round((activeDays / totalDays) * 100) : 0;
+                if (percentage >= 90) {
+                    activeDaysText.textContent = 'excellent consistency!';
+                    activeDaysText.style.color = '#16a34a';
+                } else if (percentage >= 70) {
+                    activeDaysText.textContent = 'great tracking';
+                    activeDaysText.style.color = '#ca8a04';
+                } else if (percentage >= 50) {
+                    activeDaysText.textContent = 'good progress';
+                    activeDaysText.style.color = '#ea580c';
+                } else {
+                    activeDaysText.textContent = 'room to improve';
+                    activeDaysText.style.color = '#666';
+                }
             }
-            if (streakText) {
-                streakText.textContent = dashboardData.streak === 1 ? 'Day active' : 'Days active';
+
+            // Update chart title and mood tags
+            const chartTitle = document.getElementById('chartTitle');
+            const chartMoodTags = document.getElementById('chartMoodTags');
+            
+            if (chartTitle) {
+                // Use selected period for title
+                let formattedPeriod = 'Mood Trend';
+                
+                if (dashboardState.selectedPeriod) {
+                    const days = dashboardState.selectedPeriod;
+                    if (days === 7) {
+                        formattedPeriod = '7-Day';
+                    } else if (days === 14) {
+                        formattedPeriod = '2-Week';
+                    } else if (days === 30) {
+                        formattedPeriod = '30-Day';
+                    } else if (days === 90) {
+                        formattedPeriod = '3-Month';
+                    } else {
+                        formattedPeriod = `${days}-Day`;
+                    }
+                }
+                
+                chartTitle.textContent = `${formattedPeriod} Mood Trend`;
+            }
+            
+            // Update mood tags in chart header
+            if (chartMoodTags && dashboardData.analytics && dashboardData.analytics.commonTags && dashboardData.analytics.commonTags.length > 0) {
+                chartMoodTags.innerHTML = dashboardData.analytics.commonTags.slice(0, 6).map(tag => `
+                    <span style="background: #f0f9ff; color: #0369a1; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; border: 1px solid #e0f2fe;">
+                        ${tag}
+                    </span>
+                `).join('');
+            } else if (chartMoodTags) {
+                chartMoodTags.innerHTML = '';
             }
 
             // Update mood chart
             updateMoodChart();
             
-            // Update daily insight
-            updateDailyInsight();
-
             // Update recent mood entries
             updateRecentMoodDisplay();
 
@@ -2566,92 +3084,163 @@
             return { weeklyAverage, trend, last7Days };
         }
 
-        function calculateActivityStreak(moodEntries, journalEntries) {
-            const now = new Date();
-            let streak = 0;
-            
-            for (let i = 0; i < 30; i++) { // Check last 30 days
-                const date = new Date(now);
-                date.setDate(date.getDate() - i);
-                const dayStart = new Date(date.setHours(0, 0, 0, 0));
-                const dayEnd = new Date(date.setHours(23, 59, 59, 999));
-                
-                const hasMoodEntry = moodEntries.some(entry => {
-                    const entryDate = new Date(entry.createdAt);
-                    return entryDate >= dayStart && entryDate <= dayEnd;
-                });
-                
-                const hasJournalEntry = journalEntries.some(entry => {
-                    const entryDate = new Date(entry.createdAt);
-                    return entryDate >= dayStart && entryDate <= dayEnd;
-                });
-                
-                if (hasMoodEntry || hasJournalEntry) {
-                    streak++;
-                } else {
-                    break;
-                }
-            }
-            
-            return streak;
-        }
+
+        // Global chart instance
+        let moodChart = null;
 
         function updateMoodChart() {
             const chartContainer = document.getElementById('moodChart');
-            if (!chartContainer || !dashboardData.analytics) return;
-            
-            const last7Days = dashboardData.analytics.last7Days;
-            const maxScore = 10;
-            const chartHeight = 160;
-            const chartWidth = chartContainer.clientWidth - 40;
-            
-            if (last7Days.every(day => day.average === null)) {
-                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">No mood data for the last 7 days</div>';
+            if (!chartContainer) {
+                console.error('Chart container not found');
                 return;
             }
             
-            // Create SVG chart
-            let chartHTML = `
-                <svg width="${chartWidth}" height="${chartHeight}" style="overflow: visible;">
-                    <!-- Grid lines -->
-                    ${[2, 4, 6, 8, 10].map(val => `
-                        <line x1="0" y1="${chartHeight - (val / maxScore) * chartHeight}" 
-                              x2="${chartWidth}" y2="${chartHeight - (val / maxScore) * chartHeight}" 
-                              stroke="#e5e7eb" stroke-width="1" opacity="0.5"/>
-                        <text x="-5" y="${chartHeight - (val / maxScore) * chartHeight + 4}" 
-                              fill="#9ca3af" font-size="12" text-anchor="end">${val}</text>
-                    `).join('')}
-                    
-                    <!-- Data line -->
-                    <polyline fill="none" stroke="#4a90e2" stroke-width="3" points="${
-                        last7Days.map((day, index) => {
-                            if (day.average === null) return null;
-                            const x = (index / (last7Days.length - 1)) * chartWidth;
-                            const y = chartHeight - (day.average / maxScore) * chartHeight;
-                            return `${x},${y}`;
-                        }).filter(point => point !== null).join(' ')
-                    }"/>
-                    
-                    <!-- Data points -->
-                    ${last7Days.map((day, index) => {
-                        if (day.average === null) return '';
-                        const x = (index / (last7Days.length - 1)) * chartWidth;
-                        const y = chartHeight - (day.average / maxScore) * chartHeight;
-                        return `<circle cx="${x}" cy="${y}" r="4" fill="#4a90e2"/>`;
-                    }).join('')}
-                </svg>
-                
-                <!-- Day labels -->
-                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #666;">
-                    ${last7Days.map(day => {
-                        const dayName = day.date.toLocaleDateString('en', { weekday: 'short' });
-                        return `<span style="text-align: center;">${dayName}</span>`;
-                    }).join('')}
-                </div>
-            `;
+            if (!dashboardData.analytics) {
+                console.warn('No analytics data available');
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #666;">No analytics data available</div>';
+                return;
+            }
             
-            chartContainer.innerHTML = chartHTML;
+            // Use server-side moodTrendData if available, otherwise fallback to client-side data
+            const moodTrendData = dashboardData.analytics.moodTrendData || {};
+            const last7Days = dashboardData.analytics.last7Days || [];
+            
+            // Prepare data for Chart.js
+            const chartData = prepareChartData(moodTrendData, last7Days);
+            
+            if (chartData.length === 0) {
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #666;">No mood data available for selected period</div>';
+                return;
+            }
+            
+            // Destroy existing chart
+            if (moodChart) {
+                moodChart.destroy();
+                moodChart = null;
+            }
+            
+            // Create canvas element
+            chartContainer.innerHTML = '<canvas id="moodChartCanvas" style="height: 200px;"></canvas>';
+            const ctx = document.getElementById('moodChartCanvas').getContext('2d');
+            
+            // Create Chart.js chart
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Mood Score',
+                        data: chartData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.4,
+                        spanGaps: false // Don't connect across missing data
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const date = new Date(context[0].parsed.x);
+                                    return date.toLocaleDateString('en-US', { 
+                                        weekday: 'short', 
+                                        month: 'short', 
+                                        day: 'numeric' 
+                                    });
+                                },
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    if (value === null) return 'No mood data';
+                                    const emoji = getMoodEmoji(value);
+                                    return `${emoji} Mood: ${value}/10`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM dd'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 10,
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2,
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
         }
+
+        function prepareChartData(moodTrendData, last7Days) {
+            let chartData = [];
+            
+            if (Object.keys(moodTrendData).length > 0) {
+                // Use server data
+                const dateRange = calculateDateRange(dashboardState.selectedPeriod || 7);
+                const startDate = new Date(dateRange.startDate);
+                const endDate = new Date(dateRange.endDate);
+                
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    const score = moodTrendData[dateStr];
+                    
+                    chartData.push({
+                        x: new Date(d),
+                        y: (score !== null && score !== undefined) ? score : null
+                    });
+                }
+            } else if (last7Days.length > 0) {
+                // Fallback to client data
+                chartData = last7Days.map(day => ({
+                    x: new Date(day.date),
+                    y: (day.average !== null && day.average !== undefined) ? day.average : null
+                }));
+            }
+            
+            console.log('Chart.js data:', chartData);
+            return chartData;
+        }
+
 
         function updateDailyInsight() {
             const insightContainer = document.getElementById('dailyInsight');
@@ -2701,19 +3290,9 @@
             const { trend, weeklyAverage, last7Days } = dashboardData.analytics;
             const moodEntries = dashboardData.recentMoodEntries;
             const journalEntries = dashboardData.recentJournalEntries;
-            const streak = dashboardData.streak;
             const todayMood = dashboardData.recentMood;
             
-            // 1. Streak-based insights (highest priority)
-            if (streak >= 14) {
-                insights.push(`🔥 Outstanding! ${streak} days of consistent tracking. You're building powerful mental health habits!`);
-            } else if (streak >= 7) {
-                insights.push(`🎉 Amazing! You've been active for ${streak} days straight. Your dedication to mental wellness is inspiring!`);
-            } else if (streak >= 3) {
-                insights.push(`💪 Great momentum! ${streak} days in a row. Consistency is key to mental wellness.`);
-            }
-            
-            // 2. Trend analysis insights
+            // 1. Trend analysis insights
             if (trend === 'improving' && weeklyAverage > 6) {
                 insights.push(`📈 Excellent! Your mood is trending upward with a ${weeklyAverage.toFixed(1)} average. You're thriving!`);
             } else if (trend === 'improving') {
@@ -2724,7 +3303,7 @@
                 insights.push(`📉 Your mood has dipped recently. Remember, it's normal to have ups and downs.`);
             }
             
-            // 3. Today's mood insights
+            // 2. Today's mood insights
             if (todayMood) {
                 if (todayMood.moodScore >= 9) {
                     insights.push(`✨ You're having an exceptional day! This energy is perfect for tackling goals or helping others.`);
@@ -2742,7 +3321,7 @@
                 }
             }
             
-            // 4. Weekly performance insights
+            // 3. Weekly performance insights
             if (weeklyAverage >= 8) {
                 insights.push(`🌟 Your weekly average of ${weeklyAverage.toFixed(1)} shows excellent mental wellness! You're doing great.`);
             } else if (weeklyAverage >= 7) {
@@ -2751,7 +3330,7 @@
                 insights.push(`📊 Your ${weeklyAverage.toFixed(1)} average shows room for growth. Small daily practices can help.`);
             }
             
-            // 5. Journaling insights
+            // 4. Journaling insights
             const recentJournals = journalEntries.slice(0, 7); // Last 7 entries
             if (recentJournals.length >= 3) {
                 const moodImprovements = recentJournals.filter(entry => 
@@ -2767,7 +3346,7 @@
                 insights.push(`🖊️ You've written ${journalEntries.length} journal entries! Writing is a powerful tool for mental clarity.`);
             }
             
-            // 6. Consistency insights
+            // 5. Consistency insights
             const daysWithEntries = last7Days.filter(day => day.count > 0).length;
             if (daysWithEntries >= 5) {
                 insights.push(`🗓️ You've tracked your mood ${daysWithEntries} out of 7 days this week. Excellent consistency!`);
@@ -2775,7 +3354,7 @@
                 insights.push(`📅 You've been active ${daysWithEntries} days this week. Try for daily check-ins to see more patterns.`);
             }
             
-            // 7. Pattern recognition insights
+            // 6. Pattern recognition insights
             const lowMoodDays = moodEntries.filter(entry => entry.moodScore <= 4).length;
             const highMoodDays = moodEntries.filter(entry => entry.moodScore >= 7).length;
             
@@ -2783,12 +3362,12 @@
                 insights.push(`🌈 You have more high-mood days than low ones recently. You're building resilience!`);
             }
             
-            // 8. Engagement insights
+            // 7. Engagement insights
             if (moodEntries.length >= 10) {
                 insights.push(`📊 With ${moodEntries.length} mood entries, you're building valuable data for self-understanding.`);
             }
             
-            // Sort insights by priority (streak > trend > today > weekly > others)
+            // Sort insights by priority (trend > today > weekly > others)
             return insights;
         }
 
