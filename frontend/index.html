@@ -1415,10 +1415,8 @@
             } catch (error) {
                 // Check if it's an authentication error (401/403) vs other errors
                 if (error.message.includes('401') || error.message.includes('403')) {
-                    console.log('Token validation failed: unauthorized');
                     return false;
                 } else {
-                    console.log('Token validation failed:', error);
                     return false;
                 }
             }
@@ -1651,12 +1649,6 @@
                 });
                 return response.ok;
             } catch (error) {
-                console.log('Keycloak health check failed:', error?.message || 'Unknown error');
-                console.log('Full error details:', {
-                    name: error?.name,
-                    message: error?.message,
-                    stack: error?.stack
-                });
                 return false;
             }
         }
@@ -2470,8 +2462,6 @@
                 endDate: endDate.toISOString().split('T')[0]
             };
             
-            console.log(`calculateDateRange(${days}):`, result.startDate, 'to', result.endDate);
-            console.log('Today is:', new Date().toDateString());
             
             return result;
         }
@@ -2557,17 +2547,9 @@
                 const hasJournalData = dashboardData.journalCount > 0;
                 dashboardData.isNewUser = !hasMoodData && !hasJournalData;
                 
-                console.log('Dashboard data check:', {
-                    moodEntries: dashboardData.recentMoodEntries.length,
-                    journalCount: dashboardData.journalCount,
-                    hasMoodData,
-                    hasJournalData,
-                    isNewUser: dashboardData.isNewUser
-                });
 
                 // Use server-side trend data instead of client-side calculation
                 dashboardData.serverTrends = dashboardTrends;
-                console.log('Server trends data:', dashboardTrends);
                 
                 dashboardData.analytics = {
                     weeklyAverage: dashboardTrends.averageMoodScore || 0,
@@ -2581,7 +2563,6 @@
                     last7Days: calculateMoodAnalytics(dashboardData.recentMoodEntries).last7Days || []
                 };
                 
-                console.log('Dashboard analytics processed:', dashboardData.analytics);
 
             } catch (error) {
                 console.error('Failed to load dashboard data:', error);
@@ -2621,12 +2602,9 @@
                 const insightsSection = insightsHeading.closest('div[style*="linear-gradient"]');
                 if (insightsSection) {
                     insightsSection.style.display = 'none';
-                    console.log('Insights section hidden');
                 } else {
-                    console.log('Could not find insights section parent');
                 }
             } else {
-                console.log('Could not find insights heading');
             }
             
             // Hide mood trend chart section for new users
@@ -2635,7 +2613,6 @@
                 const moodTrendSection = moodTrendHeading.closest('div[style*="background: white"]');
                 if (moodTrendSection) {
                     moodTrendSection.style.display = 'none';
-                    console.log('Mood trend section hidden');
                     
                     // Only create onboarding card if it doesn't exist
                     if (!document.getElementById('onboarding-card')) {
@@ -2670,10 +2647,8 @@
                         moodTrendSection.parentNode.insertBefore(onboardingCard, moodTrendSection);
                     }
                 } else {
-                    console.log('Could not find mood trend section parent');
                 }
             } else {
-                console.log('Could not find mood trend heading');
             }
             
             // Update mood card with onboarding message
@@ -2803,7 +2778,6 @@
                     const parsedEmotional = insightData.emotionalState ? formatMarkdown(insightData.emotionalState) : null;
                     const parsedTrend = insightData.trendAnalysis ? formatMarkdown(insightData.trendAnalysis) : null;
                     
-                    console.log('Insight data received:', { parsedEmotional, parsedTrend });
                     
                     // If both insights are available, create tabs
                     if (parsedTrend && parsedEmotional && insightContainer) {
@@ -2911,16 +2885,13 @@
         }
 
         function updateDashboardDisplay() {
-            console.log('updateDashboardDisplay called, isNewUser:', dashboardData.isNewUser);
             
             // Check if user is new and show onboarding guidance
             if (dashboardData.isNewUser) {
-                console.log('Showing onboarding guidance');
                 showOnboardingGuidance();
                 return;
             }
             
-            console.log('Showing normal dashboard');
             
             // Show insights section when user has data
             const insightsHeading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Your Wellness Insights'));
@@ -3420,7 +3391,6 @@
                 }));
             }
             
-            console.log('Chart.js data:', chartData);
             return chartData;
         }
 
@@ -4403,9 +4373,6 @@ This is a test of **bold text** and *italic text*.
 
 Visit [Google](https://google.com) for more info.`;
             
-            console.log('Testing markdown rendering...');
-            console.log('Original:', testContent);
-            console.log('Formatted:', formatMarkdown(testContent));
             
             // Add test message
             addMessage(testContent, false, Date.now());
@@ -4415,8 +4382,6 @@ Visit [Google](https://google.com) for more info.`;
         function testCBTContent() {
             const cbtContent = "Okay, here are some articles about Cognitive Behavioral Therapy (CBT), categorized for easier browsing. I've included a mix of introductory pieces, articles focusing on specific applications, and some from reputable sources.\\n\\nI. Introductory & Overview Articles:\\n\\n* American Psychological Association (APA): Cognitive Behavioral Therapy:\\n * Link: https://www.apa.org/ptsd-guideline/patients-and-families/cognitive-behavioral\\n * Summary: A good overview of CBT, its principles, and how it works. Explains the focus on thoughts, feelings, and behaviors, and how CBT helps individuals identify and change negative patterns.\\n\\n* Mayo Clinic: Cognitive behavioral therapy (CBT):\\n * Link: https://www.mayoclinic.org/tests-procedures/cognitive-behavioral-therapy/about/pac-20384610\\n * Summary: Provides a clear and concise explanation of CBT, including what to expect during therapy sessions, and conditions it can treat.";
             
-            console.log('Testing CBT content...');
-            console.log('Formatted:', formatMarkdown(cbtContent));
             
             // Add test message
             addMessage(cbtContent, false, Date.now());
