@@ -1,8 +1,5 @@
 # MindBridge AI - Mental Health Platform
 
-> **AI-Powered Mental Health Platform**  
-> Connecting people with accessible mental health support through modern technology.
-
 ## 🎯 Project Overview
 
 MindBridge is a mental health platform designed to make therapeutic practices more accessible and consistent.
@@ -15,32 +12,34 @@ In the future, MindBridge will also bridge connections between individuals and m
 **What it does:** Bridges individuals to their own minds and eventually to mental health professionals  
 **My goal:** Reinforce therapy, not replace it - providing support when experts aren't available
 
-## ☁️ Production Deployment
+## ☁️ Live Demo
 
-The platform is deployed and running on Google Cloud Platform.
+The platform is deployed and running on Google Kubernetes Engine.
 
 **Live Application**: https://mindbridge.honne.app
+
+**Mental Health Prediction Tool**: https://mindbridge.honne.app/prediction  
+Previous academic project (Second Term 2025) integrated into MindBridge - Python Flask web application that predicts mental health scores using machine learning and provides AI-powered personalized recommendations via Google's Gemini API. Features Random Forest modeling (78% accuracy) trained on 50,000 lifestyle records.  
+[Repository](https://github.com/peterhonne/MentalHealthPredictor)
 
 ## ✨ Key Features
 
 ### AI-Powered Mental Health Support
 - **Intelligent Intent Classification** - Dynamic conversation routing to therapeutic, educational, or general chat modes
-- **Context-Aware Responses** - Leverages personal mood and journal history for personalized support
-- **Retrieval Augmented Generation Pipeline** - RAG system with query transformation, domain-specific retrieval
+- **Context-Aware Responses** - Uses a RAG pipeline to tailor personalized AI responses based on user's journals, moods, and mental health knowledge.
 - **Safety Guardrails** - Content filtering to ensure appropriate therapeutic interactions
 - **Multi-Database Strategy** - PostgreSQL, Redis, and vector storage for different AI use cases
 
 ### Mental Health Tools & Analytics
 - **Multi-View SPA** - Dashboard analytics, mood tracking, journaling, and real-time AI chat
 - **Mood Tracking** - Interactive mood logging with analytics and trend visualization
-- **Digital Journaling** - Structured journaling with search, tagging, and mood correlation
-- **Personalized Insights** - AI-generated recommendations based on individual patterns
+- **Journaling** - Structured journaling with search, tagging, and mood correlation
+- **Personalized Insights** - AI-generated insights and recommendations based on individual mood logs and journal entries
 - **Educational Support** - Domain-specific mental health knowledge via Tavily Search API
 
 ### Enterprise Architecture
 - **Identity & Access Management** - Secure authentication and authorization using Keycloak (OAuth 2.0)
 - **Multi-Database Architecture** - PostgreSQL, Redis, and vector storage for different data types
-- **Production Deployment** - Live on Google Cloud Platform with Kubernetes orchestration
 
 ## 🏗️ Architecture & Technology
 
@@ -80,7 +79,7 @@ graph TD
 
 ### Technology Stack
 
-- **Progressive Web Application** - Frontend code developed by Claude Code
+- **Progressive Web Application** - Frontend development handled by Claude Code, backend & infrastructure by me
 - **Spring AI Integration** - Advanced RAG with vector database and context-aware responses
 - **Spring Boot** - Enterprise microservices framework
 - **PostgreSQL with pgvector** - Vector database for AI embeddings
@@ -94,13 +93,6 @@ graph TD
 - **Platform**: Google Cloud Platform (GCP)
 - **Orchestration**: Google Kubernetes Engine (GKE) with auto-scaling
 - **Infrastructure as Code**: Terraform for provisioning all cloud resources
-
-### DevOps Pipeline
-```bash
-terraform init → plan → apply
-docker build → tag → push (Artifact Registry)  
-kubectl apply → rollout restart (zero-downtime)
-```
 
 ## 🚀 Quick Start
 
@@ -128,35 +120,41 @@ docker-compose logs -f
 The application will be available at http://localhost.
 
 
-## 📊 Development Timeline
+## Development Timeline
 
-### June 27 - June 28, 2025: Project Initiation & AI Memory Implementation
-- ✅ Project architecture design and technology stack selection
-- ✅ Maven project setup with Spring Boot microservices structure
-- ✅ Customized Redis-based conversation memory with timestamp metadata
-- ✅ Message persistence and retrieval system
+### June 27 - June 28, 2025: Project Initiation Phase
+Key decisions: Keycloak vs Spring Security, Spring AI vs LangChain4j. 
+Reversed migration from Next.js -> React -> HTML/JS to reduce development complexity for Claude Code. (TypeScript made Claude cry. Will migrate back.)
+- Project architecture design and technology stack selection
+- Maven project setup with Spring Boot microservices structure
+- Basic chat functionality with customized Redis-based conversation memory
+- Keycloak setup, google/github social login
 
-### June 29 - July 5, 2025: Production Deployment Pipeline
-- ✅ Docker containerization for all services
-- ✅ Terraform infrastructure as code setup
-- ✅ Google Cloud Platform deployment with Kubernetes
-- ✅ Container registry and image management
+### June 29 - July 5, 2025: Deployment Phase
+Prioritized deployment to validate complete workflow. 
+Got stuck at GKE Ingress network config, resolved using Nginx Ingress alternative.
+- Docker containerization for all services
+- Terraform infrastructure as code setup
+- Google Cloud Platform deployment with Kubernetes
 
-### July 6 - July 13, 2025: Advanced AI Features
-- ✅ RAG implementation with vector database
-- ✅ Mood and journal entry tracking systems
-- ✅ Context-aware AI agent orchestration
-- ✅ Query transformation and knowledge retrieval
-- ✅ Input guardrails and safety filtering
-- ✅ Tavily search API integration for mental health knowledge
+### July 6 - July 13, 2025: AI Features Phase
+Focused on business logic, reviewing demo repos, docs, and articles to find and implement AI patterns and techniques.
+- RAG implementation with vector database
+- Mood and journal entry tracking systems
+- Context-aware AI agent orchestration
+- Query transformation and knowledge retrieval
+- Input guardrails and safety filtering
+- Tavily search API integration for mental health knowledge
 
-## 📋 Upcoming Features
+## TODO List
 
-- 🔄 Enhanced multi-layer memory management
-- 📋 HIPAA compliance framework and medical data privacy standards
-- 📋 Integration with mental health professionals platform
-- 📋 Advanced analytics and personalized insights
-- 📋 Mobile application development
+-  **Enhanced memory management** - Redis-based conversation context and user session persistence
+-  **HIPAA-compliant encryption** - End-to-end data protection for healthcare privacy standards
+-  **Prometheus monitoring** - Application metrics, health checks, and performance dashboards
+-  **Automated CI/CD pipeline** - Continuous integration and deployment workflow automation
+-  **Push notifications** - Real-time alerts for mood check-ins and crisis detection
+-  **Kafka event streaming** - Asynchronous processing for mood analytics and external integrations
+-  **Mood pattern analytics** - Machine learning insights from user behavior
 
 ## 📖 Useful Resources
 
@@ -184,6 +182,7 @@ The application will be available at http://localhost.
 **Blog Posts & Articles**
 - [Spring AI Agentic Patterns](https://spring.io/blog/2025/01/21/spring-ai-agentic-patterns) - Official Spring blog post covering agentic patterns and multi-agent orchestration strategies with Spring AI - foundational concepts for agent-based architectures
 - [Google Cloud and Spring AI 1.0](https://cloud.google.com/blog/topics/developers-practitioners/google-cloud-and-spring-ai-10) - Google Cloud blog post covering Spring AI integration with GCP services including Vertex AI and Gemini - essential for cloud-native AI deployment
+- [Spring AI Prompt Engineering Patterns](https://docs.spring.io/spring-ai/reference/api/chat/prompt-engineering-patterns.html) - Official Spring AI documentation covering prompt engineering patterns, template usage, and conversation orchestration - essential reference for optimizing AI interactions
 
 ### Infrastructure & DevOps
 - [Create GKE Cluster using Terraform](https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform) - Google Cloud documentation for provisioning Kubernetes clusters with Terraform - essential for production GKE deployment setup
