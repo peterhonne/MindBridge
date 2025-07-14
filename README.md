@@ -1,6 +1,6 @@
 # MindBridge AI - Mental Health Platform
 
-## 🎯 Project Overview
+## Project Overview
 
 MindBridge is a mental health platform designed to make therapeutic practices more accessible and consistent.
 
@@ -12,12 +12,12 @@ In the future, MindBridge will also bridge connections between individuals and m
 **What it does:** Bridges individuals to their own minds and eventually to mental health professionals  
 **My goal:** Reinforce therapy, not replace it - providing support when experts aren't available
 
-## 🚧 Project Status
+## Project Status
 
 This is an ongoing, long-term project with significant work ahead for production readiness. The current version represents the output of a foundational three-week development sprint, the goal of which was to rapidly build and deploy a feature-rich core platform.  
 While the current implementation provides a solid foundation with modern architecture patterns, much more optimization and development is needed to meet enterprise mental health platform standards.  
 
-## ☁️ Live Demo
+## Live Demo
 
 MindBridge is deployed and running on Google Kubernetes Engine.
 
@@ -27,7 +27,7 @@ MindBridge is deployed and running on Google Kubernetes Engine.
 Previous academic project integrated into MindBridge - Python Flask web application that predicts mental health scores using machine learning and provides AI-powered personalized recommendations via Google's Gemini API. Features Random Forest modeling (78% accuracy) trained on 50,000 lifestyle records.  
 [Repository](https://github.com/peterhonne/MentalHealthPredictor)
 
-## ✨ Key Features
+## Key Features
 
 ### Mental Health Tools & Analytics
 - Dynamic conversation routing to therapeutic, educational, or general chat modes
@@ -41,7 +41,7 @@ Previous academic project integrated into MindBridge - Python Flask web applicat
 - Secure authentication and authorization using Keycloak (OAuth 2.0)
 - PostgreSQL, Redis, and vector storage for different AI use cases
 
-## 🏗️ Architecture & Technology
+## Architecture & Technology
 
 ### System Architecture
 ```mermaid
@@ -97,7 +97,7 @@ I was responsible for the end-to-end backend systems, AI/RAG pipeline, cloud inf
 - **Orchestration**: Docker for containerization and Google Kubernetes Engine (GKE) for deployment and scaling
 - **Infrastructure as Code**: Terraform for provisioning all cloud resources
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker and Docker Compose installed
@@ -161,7 +161,7 @@ Focused on business logic, reviewing demo repos, docs, and articles to find and 
 -  **Kafka event streaming** - Asynchronous processing for mood analytics and external integrations
 -  **Mood pattern analytics** - Machine learning insights from user behavior
 
-## 📖 Useful Learning Resources
+## Useful Learning Resources
 
 ### AI Memory & Learning Systems
 - [Building AI Agents with Dual-Memory Architecture](https://github.com/NirDiamant/agents-towards-production/tree/main/tutorials/agent-memory-with-redis) - Redis-based tutorial for implementing episodic vs semantic memory patterns with LangGraph integration - foundational for multi-layer memory systems
