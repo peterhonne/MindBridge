@@ -123,22 +123,22 @@ The application will be available at http://localhost.
 ## Development Timeline
 
 ### June 27 - June 28, 2025: Project Initiation Phase
-Key decisions: Keycloak vs Spring Security, Spring AI vs LangChain4j. 
-Reversed migration from Next.js -> React -> HTML/JS to reduce development complexity for Claude Code. (TypeScript made Claude cry. Will migrate back.)
+Key decisions: Keycloak vs Spring Security, Spring AI vs LangChain4j.   
+Reversed migration from Next.js -> React -> HTML/JS to reduce development complexity for Claude Code. (TypeScript made Claude cry. Will migrate back.)  
 - Project architecture design and technology stack selection
 - Maven project setup with Spring Boot microservices structure
 - Basic chat functionality with customized Redis-based conversation memory
 - Keycloak setup, google/github social login
 
 ### June 29 - July 5, 2025: Deployment Phase
-Prioritized deployment to validate complete workflow. 
-Got stuck at GKE Ingress network config, resolved using Nginx Ingress alternative.
+Prioritized deployment to validate complete workflow.  
+Got stuck at GKE Ingress network config, resolved using Nginx Ingress alternative.  
 - Docker containerization for all services
 - Terraform infrastructure as code setup
 - Google Cloud Platform deployment with Kubernetes
 
 ### July 6 - July 13, 2025: AI Features Phase
-Focused on business logic, reviewing demo repos, docs, and articles to find and implement AI patterns and techniques.
+Focused on business logic, reviewing demo repos, docs, and articles to find and implement AI patterns and techniques.  
 - RAG implementation with vector database
 - Mood and journal entry tracking systems
 - Context-aware AI agent orchestration
