@@ -161,7 +161,7 @@ Focused on business logic, reviewing demo repos, docs, and articles to find and 
 -  **Kafka event streaming** - Asynchronous processing for mood analytics and external integrations
 -  **Mood pattern analytics** - Machine learning insights from user behavior
 
-## 📖 Useful Resources
+## 📖 Useful Learning Resources
 
 ### AI Memory & Learning Systems
 - [Building AI Agents with Dual-Memory Architecture](https://github.com/NirDiamant/agents-towards-production/tree/main/tutorials/agent-memory-with-redis) - Redis-based tutorial for implementing episodic vs semantic memory patterns with LangGraph integration - foundational for multi-layer memory systems
