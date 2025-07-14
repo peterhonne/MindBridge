@@ -12,9 +12,14 @@ In the future, MindBridge will also bridge connections between individuals and m
 **What it does:** Bridges individuals to their own minds and eventually to mental health professionals  
 **My goal:** Reinforce therapy, not replace it - providing support when experts aren't available
 
+## 🚧 Project Status
+
+This is an ongoing, long-term project with significant work ahead for production readiness. The current version represents the output of a foundational three-week development sprint, the goal of which was to rapidly build and deploy a feature-rich core platform.  
+While the current implementation provides a solid foundation with modern architecture patterns, much more optimization and development is needed to meet enterprise mental health platform standards.  
+
 ## ☁️ Live Demo
 
-The platform is deployed and running on Google Kubernetes Engine.
+MindBridge is deployed and running on Google Kubernetes Engine.
 
 **Live Application**: https://mindbridge.honne.app
 
@@ -74,7 +79,7 @@ graph TD
 
 ### Technology Stack
 
-This project was developed collaboratively by me (backend & Infrastructure) and Claude Code (frontend development).
+I was responsible for the end-to-end backend systems, AI/RAG pipeline, cloud infrastructure, and DevOps. To accelerate the sprint, the frontend UI was developed by Claude Code.
 - **Spring AI** - Advanced RAG with vector database and context-aware responses
 - **Spring Boot** - Microservices architecture with REST API endpoints
 - **Spring Boot Actuator** - Application monitoring, health checks, and management endpoints
@@ -85,12 +90,11 @@ This project was developed collaboratively by me (backend & Infrastructure) and 
 - **Google Vertex AI** - Google's advanced language model integration + embeddings
 - **Tavily Search API** - Mental health knowledge retrieval
 - **Keycloak** - Identity and access management with OAuth2
-- **Docker** - Containerization platform for microservices deployment
 - **Nginx** - Reverse proxy and ingress controller for Kubernetes
 
 ### DevOps & Infrastructure
 - **Platform**: Google Cloud Platform (GCP)
-- **Orchestration**: Google Kubernetes Engine (GKE) with auto-scaling
+- **Orchestration**: Docker for containerization and Google Kubernetes Engine (GKE) for deployment and scaling
 - **Infrastructure as Code**: Terraform for provisioning all cloud resources
 
 ## 🚀 Quick Start
@@ -121,9 +125,9 @@ The application will be available at http://localhost.
 
 ## Development Timeline
 
-### June 27 - June 28, 2025: Project Initiation Phase
+### June 24 - June 28, 2025: Project Initiation 
 Key decisions: Keycloak vs Spring Security, Spring AI vs LangChain4j.   
-Reversed migration from Next.js -> React -> HTML/JS to reduce development complexity for Claude Code. (TypeScript made Claude cry. Will migrate back.)  
+Made a pragmatic choice to use plain HTML/JS to accelerate UI development for the initial sprint. A full migration to React/TypeScript is planned to ensure long-term scalability and maintainability.
 - Project architecture design and technology stack selection
 - Maven project setup with Spring Boot microservices structure
 - Basic chat functionality with customized Redis-based conversation memory
@@ -145,9 +149,11 @@ Focused on business logic, reviewing demo repos, docs, and articles to find and 
 - Input guardrails and safety filtering
 - Tavily search API integration for mental health knowledge
 
-## TODO List
 
--  **Enhanced memory management** - Redis-based conversation context and user session persistence
+## Future Work & Production Roadmap
+
+-  **Enhanced memory management** - Redis-based multi-layer memory management system
+-  **Frontend migration** - Migrate from single-file HTML to React/TypeScript for improved maintainability and scalability
 -  **HIPAA-compliant encryption** - End-to-end data protection for healthcare privacy standards
 -  **Prometheus monitoring** - Application metrics, health checks, and performance dashboards
 -  **Automated CI/CD pipeline** - Continuous integration and deployment workflow automation
