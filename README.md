@@ -24,22 +24,17 @@ Previous academic project integrated into MindBridge - Python Flask web applicat
 
 ## ✨ Key Features
 
-### AI-Powered Mental Health Support
-- **Intelligent Intent Classification** - Dynamic conversation routing to therapeutic, educational, or general chat modes
-- **Context-Aware Responses** - Uses a RAG pipeline to tailor personalized AI responses based on user's journals, moods, and mental health knowledge.
-- **Safety Guardrails** - Content filtering to ensure appropriate therapeutic interactions
-- **Multi-Database Strategy** - PostgreSQL, Redis, and vector storage for different AI use cases
-
 ### Mental Health Tools & Analytics
-- **Multi-View SPA** - Dashboard analytics, mood tracking, journaling, and real-time AI chat
-- **Mood Tracking** - Interactive mood logging with analytics and trend visualization
-- **Journaling** - Structured journaling with search, tagging, and mood correlation
-- **Personalized Insights** - AI-generated insights and recommendations based on individual mood logs and journal entries
-- **Educational Support** - Domain-specific mental health knowledge via Tavily Search API
-
-### Enterprise Architecture
-- **Identity & Access Management** - Secure authentication and authorization using Keycloak (OAuth 2.0)
-- **Multi-Database Architecture** - PostgreSQL, Redis, and vector storage for different data types
+- Dynamic conversation routing to therapeutic, educational, or general chat modes
+- Dashboard analytics, mood tracking, journaling, and real-time AI chat
+- Interactive mood logging with analytics and trend visualization
+- Structured journaling with search, tagging, and mood correlation
+- RAG pipeline to tailor personalized AI responses based on user's journals, moods, and mental health knowledge.
+- Content filtering to ensure appropriate therapeutic interactions
+- AI-generated insights and recommendations based on individual mood logs and journal entries
+- Domain-specific mental health knowledge via Tavily Search API
+- Secure authentication and authorization using Keycloak (OAuth 2.0)
+- PostgreSQL, Redis, and vector storage for different AI use cases
 
 ## 🏗️ Architecture & Technology
 
@@ -79,15 +74,19 @@ graph TD
 
 ### Technology Stack
 
-- **Progressive Web Application** - Frontend development handled by Claude Code, backend & infrastructure by me
-- **Spring AI Integration** - Advanced RAG with vector database and context-aware responses
-- **Spring Boot** - Enterprise microservices framework
+This project was developed collaboratively by me (backend & Infrastructure) and Claude Code (frontend development).
+- **Spring AI** - Advanced RAG with vector database and context-aware responses
+- **Spring Boot** - Microservices architecture with REST API endpoints
+- **Spring Boot Actuator** - Application monitoring, health checks, and management endpoints
+- **OpenAPI/Swagger** - Auto-generated API documentation and testing interface
+- **Spring Data JPA** - Data persistence and repository abstraction layer
 - **PostgreSQL with pgvector** - Vector database for AI embeddings
 - **Redis** - Conversation memory and caching layer
-- **Gemini Pro** - Google's advanced language model integration
+- **Google Vertex AI** - Google's advanced language model integration + embeddings
 - **Tavily Search API** - Mental health knowledge retrieval
-- **Google Kubernetes Engine** - Production container orchestration
-- **Terraform** - Infrastructure as code provisioning
+- **Keycloak** - Identity and access management with OAuth2
+- **Docker** - Containerization platform for microservices deployment
+- **Nginx** - Reverse proxy and ingress controller for Kubernetes
 
 ### DevOps & Infrastructure
 - **Platform**: Google Cloud Platform (GCP)
