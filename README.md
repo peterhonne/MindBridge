@@ -46,15 +46,21 @@ Previous academic project integrated into MindBridge - Python Flask web applicat
 ### System Architecture
 ```mermaid
 graph TB
-    User[User] --> Frontend[Frontend<br/>Progressive Web App]
-    Frontend --> Auth[Keycloak<br/>Authentication Server]
-    Frontend --> Gateway[API Gateway<br/>Spring Cloud Gateway]
+    User[User] --> Domain[mindbridge.honne.app<br/>Domain & SSL]
+    Domain --> Ingress[Nginx Ingress<br/>Load Balancer]
     
-    Gateway --> Orchestrator[Agent Orchestrator<br/>Spring Boot + Spring AI]
-    Orchestrator --> Auth
+    subgraph "GKE Cluster"
+        Ingress --> Frontend[Frontend Pod<br/>Progressive Web App]
+        Frontend --> Auth[Keycloak Pod<br/>Authentication Server]
+        Frontend --> Gateway[API Gateway Pod<br/>Spring Cloud Gateway]
+        
+        Gateway --> Orchestrator[Agent Orchestrator Pod<br/>Spring Boot + Spring AI]
+        Orchestrator --> Auth
+        
+        Orchestrator --> DB[(PostgreSQL Pod<br/>User Data & Vectors)]
+        Orchestrator --> Cache[(Redis Pod<br/>Memory & Cache)]
+    end
     
-    Orchestrator --> DB[(PostgreSQL<br/>User Data & Vectors)]
-    Orchestrator --> Cache[(Redis<br/>Memory & Cache)]
     Orchestrator --> Tavily[Tavily Search API<br/>Knowledge Retrieval]
     Orchestrator --> LLM[Gemini Pro<br/>Language Model]
 ```
@@ -80,17 +86,17 @@ graph TD
 ### Technology Stack
 
 I was responsible for the end-to-end backend systems, AI/RAG pipeline, cloud infrastructure, and DevOps. To accelerate the sprint, the frontend UI was developed by Claude Code.
-- **Spring AI** - Advanced RAG with vector database and context-aware responses
+- **Spring AI** - Prompt engineering and advanced RAG with vector database and context-aware responses
 - **Spring Boot** - Microservices architecture with REST API endpoints
 - **Spring Boot Actuator** - Application monitoring, health checks, and management endpoints
-- **OpenAPI/Swagger** - Auto-generated API documentation and testing interface
 - **Spring Data JPA** - Data persistence and repository abstraction layer
 - **PostgreSQL with pgvector** - Vector database for AI embeddings
 - **Redis** - Conversation memory and caching layer
-- **Google Vertex AI** - Google's advanced language model integration + embeddings
+- **Google Vertex AI** - Google's advanced language and embedding model integration
 - **Tavily Search API** - Mental health knowledge retrieval
 - **Keycloak** - Identity and access management with OAuth2
 - **Nginx** - Reverse proxy and ingress controller for Kubernetes
+- **OpenAPI/Swagger** - Auto-generated API documentation and testing interface
 
 ### DevOps & Infrastructure
 - **Platform**: Google Cloud Platform (GCP)
@@ -134,7 +140,7 @@ Made a pragmatic choice to use plain HTML/JS to accelerate UI development for th
 - Keycloak setup, google/github social login
 
 ### June 29 - July 5, 2025: Deployment Phase
-Prioritized deployment to validate complete workflow.  
+Prioritized deployment to validate complete workflow from development to deployment.  
 Got stuck at GKE Ingress network config, resolved using Nginx Ingress alternative.  
 - Docker containerization for all services
 - Terraform infrastructure as code setup
@@ -159,6 +165,7 @@ Focused on business logic, reviewing demo repos, docs, and articles to find and 
 -  **Automated CI/CD pipeline** - Continuous integration and deployment workflow automation
 -  **Push notifications** - Real-time alerts for mood check-ins and crisis detection
 -  **Kafka event streaming** - Asynchronous processing for mood analytics and external integrations
+-  **HL7/FHIR healthcare data ingestion** - Healthcare interoperability standards for clinical data integration
 -  **Mood pattern analytics** - Machine learning insights from user behavior
 
 ## Useful Learning Resources
