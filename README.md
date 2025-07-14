@@ -46,35 +46,35 @@ Previous academic project integrated into MindBridge - Python Flask web applicat
 ### System Architecture
 ```mermaid
 graph TB
-    User[👤 User] --> Frontend[🌐 Frontend<br/>Progressive Web App]
-    Frontend --> Auth[🔐 Keycloak<br/>Authentication Server]
-    Frontend --> Gateway[🚪 API Gateway<br/>Spring Cloud Gateway]
+    User[User] --> Frontend[Frontend<br/>Progressive Web App]
+    Frontend --> Auth[Keycloak<br/>Authentication Server]
+    Frontend --> Gateway[API Gateway<br/>Spring Cloud Gateway]
     
-    Gateway --> Orchestrator[🤖 Agent Orchestrator<br/>Spring Boot + Spring AI]
+    Gateway --> Orchestrator[Agent Orchestrator<br/>Spring Boot + Spring AI]
     Orchestrator --> Auth
     
-    Orchestrator --> DB[(🗄️ PostgreSQL<br/>User Data & Vectors)]
-    Orchestrator --> Cache[(⚡ Redis<br/>Memory & Cache)]
-    Orchestrator --> Tavily[📚 Tavily Search API<br/>Knowledge Retrieval]
-    Orchestrator --> LLM[🤖 Gemini Pro<br/>Language Model]
+    Orchestrator --> DB[(PostgreSQL<br/>User Data & Vectors)]
+    Orchestrator --> Cache[(Redis<br/>Memory & Cache)]
+    Orchestrator --> Tavily[Tavily Search API<br/>Knowledge Retrieval]
+    Orchestrator --> LLM[Gemini Pro<br/>Language Model]
 ```
 
 ### Message Flow Architecture
 ```mermaid
 graph TD
-    Input[📝 User Message] --> Guard[🛡️ InputGuardrail<br/>Safety Filter]
-    Guard --> Classifier[🧠 AgentOrchestrator<br/>Intent Classification]
+    Input[User Message] --> Guard[InputGuardrail<br/>Safety Filter]
+    Guard --> Classifier[AgentOrchestrator<br/>Intent Classification]
     
-    Classifier -->|GENERAL| Memory[💭 Chat Memory<br/>Redis] --> LLM[🤖 Gemini Pro]
+    Classifier -->|GENERAL| Memory[Chat Memory<br/>Redis] --> LLM[Gemini Pro]
     
-    Classifier -->|EDUCATIONAL| EduAdvisor[🎓 MessageAugmentationAdvisor<br/>Query Transform & Expand<br/>+ Tavily Search API]
+    Classifier -->|EDUCATIONAL| EduAdvisor[MessageAugmentationAdvisor<br/>Query Transform & Expand<br/>+ Tavily Search API]
     
-    Classifier -->|THERAPEUTIC| TherapyAdvisor[🩺 MessageAugmentationAdvisor<br/>Query Transform & Expand<br/>+ Vector Search Mood/Journal]
+    Classifier -->|THERAPEUTIC| TherapyAdvisor[MessageAugmentationAdvisor<br/>Query Transform & Expand<br/>+ Vector Search Mood/Journal]
     
     EduAdvisor --> LLM
     TherapyAdvisor --> LLM
     
-    LLM --> Response[💬 AI Response]
+    LLM --> Response[AI Response]
 ```
 
 ### Technology Stack
