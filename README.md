@@ -131,7 +131,7 @@ The application will be available at http://localhost.
 
 ## Development Timeline
 
-### June 24 - June 28, 2025: Project Initiation 
+### June 24 - June 28, 2025: Project Initiation Phase
 Key decisions: Keycloak vs Spring Security, Spring AI vs LangChain4j.   
 Made a pragmatic choice to use plain HTML/JS to accelerate UI development for the initial sprint. A full migration to React/TypeScript is planned to ensure long-term scalability and maintainability.
 - Project architecture design and technology stack selection
@@ -146,7 +146,7 @@ Got stuck at GKE Ingress network config, resolved using Nginx Ingress alternativ
 - Terraform infrastructure as code setup
 - Google Cloud Platform deployment with Kubernetes
 
-### July 6 - July 13, 2025: AI Features Phase
+### July 6 - July 13, 2025: AI Features Implementation Phase
 Focused on business logic, reviewing demo repos, docs, and articles to find and implement AI patterns and techniques.  
 - RAG implementation with vector database
 - Mood and journal entry tracking systems
