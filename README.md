@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-MindBridge is a mental health platform designed to make therapeutic practices more accessible and consistent.
+MindBridge is a mental health platform designed to make therapeutic practices more accessible and consistent for everyone.
 
 Currently, MindBridge serves as a bridge to an individual's own mind - helping people understand their mental state through AI chat support, mood tracking, and journaling. It's not a replacement for therapy, but reinforcement of therapeutic practices. When therapists aren't available 24/7, this platform provides support and helps maintain mental health practices between sessions.
 
