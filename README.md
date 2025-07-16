@@ -8,10 +8,6 @@ Currently, MindBridge serves as a bridge to an individual's own mind - helping p
 
 In the future, MindBridge will also bridge connections between individuals and mental health experts, extending professional guidance beyond session hours and ensuring continuity of care.
 
-**Why I built this:** Mental health support shouldn't be a luxury  
-**What it does:** Bridges individuals to their own minds and eventually to mental health professionals  
-**My goal:** Reinforce therapy, not replace it - providing support when experts aren't available
-
 ## Project Status
 
 This is an ongoing, long-term project with significant work ahead for production readiness. The current version represents the output of a foundational three-week development sprint, the goal of which was to rapidly build and deploy a feature-rich core platform.  
