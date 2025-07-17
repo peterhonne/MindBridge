@@ -1672,6 +1672,19 @@
                 updateUserInfoFromKeycloak();
             }
             
+            // Initialize user roles and demo mode
+            const token = localStorage.getItem('token');
+            if (token) {
+                userRoles = extractUserRoles(token);
+                isDemoMode = isDemoUser();
+                
+                // Apply demo mode styling if needed
+                if (isDemoMode) {
+                    addDemoModeIndicator();
+                    applyReadOnlyMode();
+                }
+            }
+            
             // Initialize layout and components only once
             if (!window.mainAppInitialized) {
                 window.mainAppInitialized = true;
@@ -1752,12 +1765,25 @@
                         </button>
                         
                         <button onclick="loginWithGitHub()" 
-                                style="width: 100%; padding: 12px; background: #24292e; color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
+                                style="width: 100%; padding: 12px; background: #24292e; color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599-.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492 .997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                             </svg>
                             Continue with GitHub
                         </button>
+                        
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+                            <button onclick="loginWithDemo()" 
+                                    style="width: 100%; padding: 12px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                Try Demo (Read-Only)
+                            </button>
+                            <p style="color: #666; font-size: 12px; text-align: center; margin: 0;">
+                                Demo mode provides read-only access to explore the platform
+                            </p>
+                        </div>
 
                     </div>
                 </div>
@@ -1878,6 +1904,59 @@
             window.location.href = githubLoginUrl;
         }
         
+        async function loginWithDemo() {
+            const demoBtn = document.querySelector('button[onclick="loginWithDemo()"]');
+            if (demoBtn) {
+                demoBtn.textContent = 'Logging in...';
+                demoBtn.disabled = true;
+            }
+            
+            try {
+                // Use demo credentials
+                const formData = new URLSearchParams();
+                formData.append('grant_type', 'password');
+                formData.append('client_id', KEYCLOAK_CONFIG.clientId);
+                formData.append('username', 'demo');
+                formData.append('password', 'demo123');
+                
+                const response = await fetch(`${KEYCLOAK_CONFIG.url}/realms/${KEYCLOAK_CONFIG.realm}/protocol/openid-connect/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString(),
+                });
+                
+                if (response.ok) {
+                    const tokenResponse = await response.json();
+                    
+                    localStorage.setItem('token', tokenResponse.access_token);
+                    localStorage.setItem('refreshToken', tokenResponse.refresh_token);
+                    
+                    // Extract and set user roles
+                    userRoles = extractUserRoles(tokenResponse.access_token);
+                    isDemoMode = isDemoUser();
+                    
+                    location.reload();
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error_description || 'Demo login failed');
+                }
+            } catch (error) {
+                console.error('Demo login error:', error);
+                if (demoBtn) {
+                    demoBtn.textContent = 'Try Demo (Read-Only)';
+                    demoBtn.disabled = false;
+                }
+                
+                const loginError = document.getElementById('loginError');
+                if (loginError) {
+                    loginError.textContent = 'Demo login failed. Please try again.';
+                    loginError.style.display = 'block';
+                }
+            }
+        }
+        
         function decodeJWT(token) {
             try {
                 const base64Url = token.split('.')[1];
@@ -1892,6 +1971,217 @@
             } catch (error) {
                 console.error('Failed to decode JWT:', error);
                 return {};
+            }
+        }
+        
+        // Global variables for user roles and demo mode
+        let userRoles = [];
+        let isDemoMode = false;
+        
+        // Extract user roles from JWT token
+        function extractUserRoles(token) {
+            try {
+                const payload = decodeJWT(token);
+                const resourceAccess = payload.resource_access;
+                
+                if (!resourceAccess || !resourceAccess.MindBridgeClient) {
+                    return [];
+                }
+                
+                const clientRoles = resourceAccess.MindBridgeClient.roles;
+                return clientRoles || [];
+            } catch (error) {
+                console.error('Failed to extract user roles:', error);
+                return [];
+            }
+        }
+        
+        // Check if current user is a demo user
+        function isDemoUser() {
+            return userRoles.includes('demo_user');
+        }
+        
+        // Check if current user is in read-only mode
+        function isReadOnlyMode() {
+            return isDemoUser();
+        }
+        
+        // Add demo mode indicator banner
+        function addDemoModeIndicator() {
+            // Check if already added
+            if (document.getElementById('demoModeIndicator')) {
+                return;
+            }
+            
+            const banner = document.createElement('div');
+            banner.id = 'demoModeIndicator';
+            banner.innerHTML = `
+                <div style="background: linear-gradient(90deg, #667eea, #764ba2); color: white; padding: 10px; text-align: center; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; font-size: 14px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    🎮 Demo Mode - Read-Only Access | Explore the platform without making changes
+                </div>
+            `;
+            
+            document.body.appendChild(banner);
+            
+            // Add padding to body to account for fixed banner
+            document.body.style.paddingTop = '50px';
+        }
+        
+        // Apply read-only mode styling and disable interactions
+        function applyReadOnlyMode() {
+            // Add global CSS for read-only mode
+            const style = document.createElement('style');
+            style.id = 'readOnlyModeStyles';
+            style.textContent = `
+                .read-only-disabled {
+                    opacity: 0.6 !important;
+                    cursor: not-allowed !important;
+                    pointer-events: none !important;
+                }
+                
+                .read-only-input {
+                    background-color: #f5f5f5 !important;
+                    cursor: not-allowed !important;
+                    pointer-events: none !important;
+                }
+                
+                .demo-tooltip {
+                    position: relative;
+                }
+                
+                .demo-tooltip::after {
+                    content: "Demo mode - Read only";
+                    position: absolute;
+                    bottom: -25px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #333;
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.3s;
+                    z-index: 1000;
+                }
+                
+                .demo-tooltip:hover::after {
+                    opacity: 1;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Apply read-only mode to specific elements after a short delay
+            setTimeout(() => {
+                disableReadOnlyElements();
+            }, 1000);
+        }
+        
+        // Disable specific elements for read-only mode
+        function disableReadOnlyElements() {
+            if (!isReadOnlyMode()) return;
+            
+            // Disable "Save Mood Entry" button
+            const saveMoodBtn = document.getElementById('saveMoodBtn');
+            if (saveMoodBtn) {
+                saveMoodBtn.classList.add('read-only-disabled', 'demo-tooltip');
+                saveMoodBtn.disabled = true;
+            }
+            
+            // Disable mood tracking submit button (fallback)
+            const moodSubmitBtn = document.getElementById('submitMoodBtn');
+            if (moodSubmitBtn) {
+                moodSubmitBtn.classList.add('read-only-disabled', 'demo-tooltip');
+                moodSubmitBtn.disabled = true;
+            }
+            
+            // Disable "New Entry" button for journal
+            const newEntryBtn = document.querySelector('button[onclick="showNewJournalForm()"]');
+            if (newEntryBtn) {
+                newEntryBtn.classList.add('read-only-disabled', 'demo-tooltip');
+                newEntryBtn.disabled = true;
+            }
+            
+            // Disable journal form elements
+            const journalForm = document.getElementById('journalForm');
+            if (journalForm) {
+                const inputs = journalForm.querySelectorAll('input, textarea, button[type="submit"]');
+                inputs.forEach(input => {
+                    input.classList.add('read-only-input');
+                    input.disabled = true;
+                });
+            }
+            
+            // Disable journal "Edit" and "Delete" buttons
+            const journalButtons = document.querySelectorAll('button[onclick*="editJournal"], button[onclick*="deleteJournal"]');
+            journalButtons.forEach(btn => {
+                btn.classList.add('read-only-disabled', 'demo-tooltip');
+                btn.disabled = true;
+            });
+            
+            // Disable chat "Send" button
+            const sendButton = document.getElementById('sendButton');
+            if (sendButton) {
+                sendButton.classList.add('read-only-disabled', 'demo-tooltip');
+                sendButton.disabled = true;
+            }
+            
+            // Disable chat input field
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.classList.add('read-only-input');
+                chatInput.disabled = true;
+                chatInput.placeholder = 'Demo mode - Chat is read-only';
+            }
+            
+            // Alternative chat input (messageInput)
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.classList.add('read-only-input');
+                messageInput.disabled = true;
+                messageInput.placeholder = 'Demo mode - Chat is read-only';
+            }
+            
+            // Disable mood sliders
+            const moodSlider = document.getElementById('moodSlider');
+            if (moodSlider) {
+                moodSlider.classList.add('read-only-input');
+                moodSlider.disabled = true;
+            }
+        }
+        
+        // Show demo mode alert
+        function showDemoModeAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 400px; text-align: center;">
+                    <div style="color: #667eea; font-size: 24px; margin-bottom: 10px;">🎮</div>
+                    <h3 style="color: #333; margin-bottom: 10px;">Demo Mode</h3>
+                    <p style="color: #666; margin-bottom: 20px;">${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 500;">
+                        OK
+                    </button>
+                </div>
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000;" onclick="this.parentElement.remove()"></div>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        // Re-apply read-only mode after navigation (call this when switching views)
+        function refreshReadOnlyMode() {
+            if (isReadOnlyMode()) {
+                setTimeout(() => {
+                    disableReadOnlyElements();
+                }, 500);
             }
         }
         
@@ -2040,6 +2330,11 @@
                 
                 // Update sidebar components visibility
                 this.updateSidebarComponents(viewName);
+                
+                // Refresh read-only mode for demo users
+                if (typeof refreshReadOnlyMode === 'function') {
+                    refreshReadOnlyMode();
+                }
                 
                 // Initialize view-specific functionality
                 this.initializeViewContent(viewName);
@@ -3029,11 +3324,15 @@
                 
                 // Calculate active days from moodTrendData or recent entries
                 if (dashboardData.analytics && dashboardData.analytics.moodTrendData) {
-                    // Count days with mood data from server
+                    // Count days with mood data from server, filtered by selected period
+                    const cutoffDate = new Date();
+                    cutoffDate.setDate(cutoffDate.getDate() - totalDays);
+                    
                     const moodDates = Object.keys(dashboardData.analytics.moodTrendData);
                     activeDays = moodDates.filter(date => {
                         const score = dashboardData.analytics.moodTrendData[date];
-                        return score !== null && score !== undefined;
+                        const entryDate = new Date(date);
+                        return (score !== null && score !== undefined) && entryDate >= cutoffDate;
                     }).length;
                 } else if (dashboardData.recentMoodEntries) {
                     // Fallback: count unique days from mood entries
@@ -3594,6 +3893,12 @@
         async function handleMoodSubmit(e) {
             e.preventDefault();
             
+            // Prevent mood submission in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Mood tracking is disabled in demo mode');
+                return;
+            }
+            
             const moodSlider = document.getElementById('moodSlider');
             const moodNotes = document.getElementById('moodNotes');
             const saveBtn = document.getElementById('saveMoodBtn');
@@ -3779,6 +4084,12 @@
         }
 
         function showNewJournalForm() {
+            // Prevent new journal form in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Creating new journal entries is disabled in demo mode');
+                return;
+            }
+            
             currentEditingEntry = null;
             const form = document.getElementById('journalForm');
             const title = document.getElementById('journalFormTitle');
@@ -3799,6 +4110,12 @@
         }
 
         function editJournalEntry(entry) {
+            // Prevent editing journal entries in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Editing journal entries is disabled in demo mode');
+                return;
+            }
+            
             currentEditingEntry = entry;
             const form = document.getElementById('journalForm');
             const title = document.getElementById('journalFormTitle');
@@ -3829,6 +4146,12 @@
 
         async function handleJournalSubmit(e) {
             e.preventDefault();
+            
+            // Prevent journal submission in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Journal editing is disabled in demo mode');
+                return;
+            }
             
             const saveBtn = document.getElementById('saveJournalBtn');
             const entryCode = document.getElementById('journalEntryCode').value;
@@ -3977,6 +4300,12 @@
         }
 
         async function deleteJournalEntry(entryCode) {
+            // Prevent deletion in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Journal deletion is disabled in demo mode');
+                return;
+            }
+            
             if (!confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')) {
                 return;
             }
@@ -4439,6 +4768,12 @@ Visit [Google](https://google.com) for more info.`;
 
 
         function sendMessage() {
+            // Prevent sending messages in demo mode
+            if (isReadOnlyMode()) {
+                showDemoModeAlert('Chat is disabled in demo mode');
+                return;
+            }
+            
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
 
