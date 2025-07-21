@@ -1,5 +1,15 @@
 # MindBridge AI - Mental Health Platform
 
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Live Demo](#live-demo)
+- [Key Features](#key-features)
+- [Architecture & Technology](#architecture--technology)
+- [Quick Start](#quick-start)
+- [Development Timeline](#development-timeline)
+- [Future Work & Production Roadmap](#future-work--production-roadmap)
+- [Useful Learning Resources](#useful-learning-resources)
+
 ## Project Overview
 
 MindBridge is a mental health platform designed to make therapeutic practices more accessible and consistent for everyone.
