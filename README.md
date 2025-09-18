@@ -27,9 +27,9 @@ While the current implementation provides a solid foundation with modern archite
 
 MindBridge is deployed and running on Google Kubernetes Engine.
 
-**Live Application**: ~~https://mindbridge.honne.app~~ (offline, migrating to a new cloud platform)
+**Live Application**: https://mindbridge.honne.app  
 
-**Mental Health Prediction Tool**: ~~https://mindbridge.honne.app/prediction~~ (offline, migrating to a new cloud platform)
+**Mental Health Prediction Tool**: https://mindbridge.honne.app/prediction  
 
 University machine learning project exploring mental health prediction using synthetic lifestyle data. This Python Flask-based web application demonstrates predictive modeling concepts with Random Forest classification (~78% accuracy) and provides AI-powered personalized recommendations via Google's Gemini API, serving as a hands-on learning experience in the data science workflow from preprocessing to deployment. Now integrated into MindBridge platform for demonstration purposes.  
 [Repository](https://github.com/peterhonne/MentalHealthPredictor)
